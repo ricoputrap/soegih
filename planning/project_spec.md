@@ -26,7 +26,7 @@ Manages wallets, expense/income categories, and transactions (expense, income, t
 
 | Layer | Choice |
 |---|---|
-| Frontend | React + Vite (CSR), static assets served by Caddy; TanStack Router (file-based); TanStack Table for data tables |
+| Frontend | React + Vite (CSR), static assets served by Caddy; TanStack Router (file-based); TanStack Table for data tables; TanStack Query for data fetching |
 | Backend | NestJS + TypeScript |
 | AI Service | Python FastAPI + LangChain |
 | ORM | Prisma |

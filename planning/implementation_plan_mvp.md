@@ -17,6 +17,7 @@
 This plan uses a **mixed-approach execution model**: sequential dependencies are honored, but independent tasks are parallelized using subagents. The implementation is organized into **9 batches** with clear checkpoint reviews between batches.
 
 **Branching & PR Workflow** (per CLAUDE.md):
+
 - Each task gets its own feature branch: `feat/task-{N}-{description}` or `fix/task-{N}-{description}`
 - Each batch's tasks open PRs independently
 - Code review + tests must pass before merging to `master`
@@ -25,27 +26,30 @@ This plan uses a **mixed-approach execution model**: sequential dependencies are
 ### Batches & Execution Approach
 
 #### **BATCH 1: Monorepo Root Setup** (Prerequisite) — SEQUENTIAL
+
 **Execution:** Single task (blocking all others)
 
-| Task | Description | Duration | Branch |
-|------|-------------|----------|--------|
-| 1 | `.gitignore`, `.env.example`, commit | ~10 min | `feat/task-1-monorepo-setup` |
+| Task | Description                          | Duration | Branch                       |
+| ---- | ------------------------------------ | -------- | ---------------------------- |
+| 1    | `.gitignore`, `.env.example`, commit | ~10 min  | `feat/task-1-monorepo-setup` |
 
 **Checkpoint:** Task 1 PR → code review → merge to master before proceeding to Batch 2.
 
 ---
 
 #### **BATCH 2: Service Scaffolding** — PARALLEL (2-4) + SEQUENTIAL (5)
+
 **Execution:** Dispatch 3 subagents in parallel for Tasks 2-4, then 1 subagent for Task 5 after they complete.
 
-| Task | Description | Dependencies | Duration | Branch |
-|------|-------------|--------------|----------|--------|
-| 2 | NestJS scaffold + deps | None | ~15 min | `feat/task-2-nestjs-scaffold` |
-| 3 | Python FastAPI scaffold | None | ~15 min | `feat/task-3-python-ai-scaffold` |
-| 4 | React + TanStack Router | None | ~15 min | `feat/task-4-react-frontend-scaffold` |
-| 5 | Docker Compose + Caddy | Tasks 2,3,4 ✓ | ~10 min | `feat/task-5-docker-caddy-setup` |
+| Task | Description             | Dependencies  | Duration | Branch                                |
+| ---- | ----------------------- | ------------- | -------- | ------------------------------------- |
+| 2    | NestJS scaffold + deps  | None          | ~15 min  | `feat/task-2-nestjs-scaffold`         |
+| 3    | Python FastAPI scaffold | None          | ~15 min  | `feat/task-3-python-ai-scaffold`      |
+| 4    | React + TanStack Router | None          | ~15 min  | `feat/task-4-react-frontend-scaffold` |
+| 5    | Docker Compose + Caddy  | Tasks 2,3,4 ✓ | ~10 min  | `feat/task-5-docker-caddy-setup`      |
 
 **Execution Plan:**
+
 1. After Batch 1 merges, dispatch **3 subagents in parallel** for Tasks 2, 3, 4
 2. Each subagent opens its own PR independently
 3. Batch review & merge all 3 PRs
@@ -57,15 +61,17 @@ This plan uses a **mixed-approach execution model**: sequential dependencies are
 ---
 
 #### **BATCH 3: Backend Foundation** — SEQUENTIAL
+
 **Execution:** Tasks must run sequentially (strict dependencies: 6→7→8)
 
-| Task | Description | Dependencies | Duration | Branch |
-|------|-------------|--------------|----------|--------|
-| 6 | Prisma schema + migrations | Task 2 ✓ | ~20 min | `feat/task-6-prisma-schema` |
-| 7 | Prisma service + app bootstrap | Task 6 ✓ | ~15 min | `feat/task-7-prisma-service` |
-| 8 | Supabase JWT guard | Task 7 ✓ | ~15 min | `feat/task-8-supabase-jwt-guard` |
+| Task | Description                    | Dependencies | Duration | Branch                           |
+| ---- | ------------------------------ | ------------ | -------- | -------------------------------- |
+| 6    | Prisma schema + migrations     | Task 2 ✓     | ~20 min  | `feat/task-6-prisma-schema`      |
+| 7    | Prisma service + app bootstrap | Task 6 ✓     | ~15 min  | `feat/task-7-prisma-service`     |
+| 8    | Supabase JWT guard             | Task 7 ✓     | ~15 min  | `feat/task-8-supabase-jwt-guard` |
 
 **Execution Plan:**
+
 1. Task 6 → PR → code review → merge
 2. Task 7 → PR → code review → merge
 3. Task 8 → PR → code review → merge
@@ -77,14 +83,16 @@ This plan uses a **mixed-approach execution model**: sequential dependencies are
 ---
 
 #### **BATCH 4: Backend Wallet & Category** — PARALLEL
+
 **Execution:** Dispatch 2 subagents in parallel (both depend on Task 8 being merged)
 
-| Task | Description | Dependencies | Duration | Branch |
-|------|-------------|--------------|----------|--------|
-| 9 | Wallet module (TDD) | Task 8 ✓ | ~60 min | `feat/task-9-wallet-module` |
-| 10 | Category module (TDD) | Task 8 ✓ | ~60 min | `feat/task-10-category-module` |
+| Task | Description           | Dependencies | Duration | Branch                         |
+| ---- | --------------------- | ------------ | -------- | ------------------------------ |
+| 9    | Wallet module (TDD)   | Task 8 ✓     | ~60 min  | `feat/task-9-wallet-module`    |
+| 10   | Category module (TDD) | Task 8 ✓     | ~60 min  | `feat/task-10-category-module` |
 
 **Execution Plan:**
+
 1. After Batch 3 (Task 8) merges, dispatch **2 subagents in parallel** for Tasks 9 & 10
 2. Each subagent opens PR independently
 3. Batch review & merge both PRs
@@ -94,16 +102,18 @@ This plan uses a **mixed-approach execution model**: sequential dependencies are
 ---
 
 #### **BATCH 5: Backend Transactions, Dashboard, AI Proxy + AI Parsing Chain** — PARALLEL
+
 **Execution:** Dispatch 4 subagents in parallel (independent tasks with no inter-dependencies)
 
-| Task | Description | Dependencies | Duration | Branch |
-|------|-------------|--------------|----------|--------|
-| 11 | Transaction module (TDD) | Task 8 ✓ | ~80 min | `feat/task-11-transaction-module` |
-| 12 | Dashboard module (TDD) | Tasks 8,9+ ✓ | ~60 min | `feat/task-12-dashboard-module` |
-| 13 | AI proxy module | Task 8 ✓ | ~40 min | `feat/task-13-ai-proxy-module` |
-| 14 | AI parsing chain (TDD) | Task 3 ✓ | ~60 min | `feat/task-14-ai-parsing-chain` |
+| Task | Description              | Dependencies | Duration | Branch                            |
+| ---- | ------------------------ | ------------ | -------- | --------------------------------- |
+| 11   | Transaction module (TDD) | Task 8 ✓     | ~80 min  | `feat/task-11-transaction-module` |
+| 12   | Dashboard module (TDD)   | Tasks 8,9+ ✓ | ~60 min  | `feat/task-12-dashboard-module`   |
+| 13   | AI proxy module          | Task 8 ✓     | ~40 min  | `feat/task-13-ai-proxy-module`    |
+| 14   | AI parsing chain (TDD)   | Task 3 ✓     | ~60 min  | `feat/task-14-ai-parsing-chain`   |
 
 **Execution Plan:**
+
 1. Can start after Task 8 merges (does **not** wait for Batch 4 to complete)
 2. Dispatch **4 subagents in parallel** for Tasks 11, 12, 13, 14
 3. Task 14 (Python) is independent and runs fully in parallel with backend work
@@ -117,14 +127,16 @@ This plan uses a **mixed-approach execution model**: sequential dependencies are
 ---
 
 #### **BATCH 6: Frontend Foundation** — SEQUENTIAL
+
 **Execution:** Tasks must run sequentially (Task 16 depends on Task 15)
 
-| Task | Description | Dependencies | Duration | Branch |
-|------|-------------|--------------|----------|--------|
-| 15 | API client + shared types + hooks | Task 4 ✓ | ~20 min | `feat/task-15-frontend-api-client` |
-| 16 | Auth module + routing | Task 15 ✓ | ~25 min | `feat/task-16-frontend-auth-routing` |
+| Task | Description                       | Dependencies | Duration | Branch                               |
+| ---- | --------------------------------- | ------------ | -------- | ------------------------------------ |
+| 15   | API client + shared types + hooks | Task 4 ✓     | ~20 min  | `feat/task-15-frontend-api-client`   |
+| 16   | Auth module + routing             | Task 15 ✓    | ~25 min  | `feat/task-16-frontend-auth-routing` |
 
 **Execution Plan:**
+
 1. After Task 4 merges (from Batch 2), Task 15 → PR → code review → merge
 2. Task 16 → PR → code review → merge
 
@@ -133,15 +145,17 @@ This plan uses a **mixed-approach execution model**: sequential dependencies are
 ---
 
 #### **BATCH 7: Frontend Wallet, Category, Transaction** — PARALLEL
+
 **Execution:** Dispatch 3 subagents in parallel (all depend on Task 16 being merged)
 
-| Task | Description | Dependencies | Duration | Branch |
-|------|-------------|--------------|----------|--------|
-| 17 | Wallet module (Frontend) | Task 16 ✓ | ~50 min | `feat/task-17-frontend-wallet-module` |
-| 18 | Category module (Frontend) | Task 16 ✓ | ~50 min | `feat/task-18-frontend-category-module` |
-| 19 | Transaction module (Frontend) | Task 16 ✓ | ~70 min | `feat/task-19-frontend-transaction-module` |
+| Task | Description                   | Dependencies | Duration | Branch                                     |
+| ---- | ----------------------------- | ------------ | -------- | ------------------------------------------ |
+| 17   | Wallet module (Frontend)      | Task 16 ✓    | ~50 min  | `feat/task-17-frontend-wallet-module`      |
+| 18   | Category module (Frontend)    | Task 16 ✓    | ~50 min  | `feat/task-18-frontend-category-module`    |
+| 19   | Transaction module (Frontend) | Task 16 ✓    | ~70 min  | `feat/task-19-frontend-transaction-module` |
 
 **Execution Plan:**
+
 1. After Batch 6 (Task 16) merges, dispatch **3 subagents in parallel** for Tasks 17, 18, 19
 2. Each subagent opens PR independently
 3. Batch review & merge all 3 PRs
@@ -151,14 +165,16 @@ This plan uses a **mixed-approach execution model**: sequential dependencies are
 ---
 
 #### **BATCH 8: Frontend Dashboard & AI Chat** — PARALLEL
+
 **Execution:** Dispatch 2 subagents in parallel (depend on Batch 7 being merged)
 
-| Task | Description | Dependencies | Duration | Branch |
-|------|-------------|--------------|----------|--------|
-| 20 | Dashboard module (Frontend) | Tasks 16,17+ ✓ | ~60 min | `feat/task-20-frontend-dashboard-module` |
-| 21 | AI chat module (Frontend) | Tasks 16,13+ ✓ | ~60 min | `feat/task-21-frontend-ai-chat-module` |
+| Task | Description                 | Dependencies   | Duration | Branch                                   |
+| ---- | --------------------------- | -------------- | -------- | ---------------------------------------- |
+| 20   | Dashboard module (Frontend) | Tasks 16,17+ ✓ | ~60 min  | `feat/task-20-frontend-dashboard-module` |
+| 21   | AI chat module (Frontend)   | Tasks 16,13+ ✓ | ~60 min  | `feat/task-21-frontend-ai-chat-module`   |
 
 **Execution Plan:**
+
 1. After Batch 7 (Tasks 17-19) merge, dispatch **2 subagents in parallel** for Tasks 20 & 21
 2. Each subagent opens PR independently
 3. Batch review & merge both PRs
@@ -168,14 +184,16 @@ This plan uses a **mixed-approach execution model**: sequential dependencies are
 ---
 
 #### **BATCH 9: Integration Testing & Deployment** — SEQUENTIAL
+
 **Execution:** Tasks must run sequentially (Task 23 depends on Task 22 passing)
 
-| Task | Description | Dependencies | Duration | Branch |
-|------|-------------|--------------|----------|--------|
-| 22 | Local integration test | All tasks ✓ | ~30 min | `feat/task-22-local-integration-test` |
-| 23 | VPS deployment | Task 22 ✓ | ~20 min | `feat/task-23-vps-deployment` |
+| Task | Description            | Dependencies | Duration | Branch                                |
+| ---- | ---------------------- | ------------ | -------- | ------------------------------------- |
+| 22   | Local integration test | All tasks ✓  | ~30 min  | `feat/task-22-local-integration-test` |
+| 23   | VPS deployment         | Task 22 ✓    | ~20 min  | `feat/task-23-vps-deployment`         |
 
 **Execution Plan:**
+
 1. After Batch 8 (Tasks 20-21) merge, Task 22 → PR → code review → merge
 2. Task 23 → PR → code review → merge
 
@@ -223,6 +241,7 @@ Batch 1 (SERIAL) — ~10 min
 ### Code Review Strategy
 
 **Per-Batch Reviews:**
+
 - ✅ **Batch 1:** Quick approval → merge (monorepo setup is straightforward)
 - ✅ **Batches 2-5:** Infrastructure, database schema, auth guard, business logic
   - Focus: NestJS patterns, Prisma migrations, Supabase integration, test coverage
@@ -234,6 +253,7 @@ Batch 1 (SERIAL) — ~10 min
   - Focus: End-to-end flow, Docker Compose health, deployment readiness
 
 **Merging Process:**
+
 - Each batch's PRs can be opened in parallel (while previous batch is under review)
 - Merge each batch only after **all PRs in that batch pass code review + tests**
 - No direct master pushes; all changes via PR
@@ -250,6 +270,7 @@ Batch 1 (SERIAL) — ~10 min
 ```
 
 Each batch will display a checkpoint where you can:
+
 - ✅ Approve and proceed to the next batch
 - 🔄 Request revisions on any task PR
 - ❌ Stop and debug if integration tests fail
@@ -261,6 +282,7 @@ Each batch will display a checkpoint where you can:
 ### Task 1: Initialize Monorepo Root
 
 **Files:**
+
 - Create: `.gitignore`
 - Create: `.env.example`
 
@@ -310,6 +332,7 @@ git commit -m "chore: initialize monorepo root with Supabase Auth config"
 ### Task 2: Scaffold NestJS Backend
 
 **Files:**
+
 - Create: `backend/` (NestJS project)
 
 - [ ] **Step 1: Scaffold NestJS**
@@ -344,6 +367,7 @@ git commit -m "chore: scaffold NestJS backend"
 ### Task 3: Scaffold Python AI Service
 
 **Files:**
+
 - Create: `ai/requirements.txt`
 - Create: `ai/app/__init__.py`
 - Create: `ai/app/main.py`
@@ -406,6 +430,7 @@ git commit -m "chore: scaffold Python AI service"
 ### Task 4: Scaffold React Frontend
 
 **Files:**
+
 - Create: `frontend/` (Vite + React + TanStack Router project)
 
 - [ ] **Step 1: Scaffold project with create-tsrouter-app**
@@ -450,6 +475,7 @@ git commit -m "chore: scaffold React frontend with TanStack Router"
 ### Task 5: Docker Compose + Caddy
 
 **Files:**
+
 - Create: `docker-compose.yml`
 - Create: `Caddyfile`
 - Create: `backend/Dockerfile`
@@ -581,6 +607,7 @@ git commit -m "chore: add Docker Compose and Caddy config"
 ### Task 6: Prisma Schema & Migrations
 
 **Files:**
+
 - Create: `backend/prisma/schema.prisma`
 
 - [ ] **Step 1: Initialize Prisma**
@@ -715,6 +742,7 @@ git commit -m "feat(backend): add Prisma schema and migrations with Supabase Aut
 ### Task 7: Prisma Service + App Bootstrap
 
 **Files:**
+
 - Create: `backend/src/prisma/prisma.service.ts`
 - Create: `backend/src/prisma/prisma.module.ts`
 - Create: `backend/src/common/filters/http-exception.filter.ts`
@@ -724,20 +752,22 @@ git commit -m "feat(backend): add Prisma schema and migrations with Supabase Aut
 - [ ] **Step 1: Create prisma.service.ts**
 
 ```typescript
-import { Injectable, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import { Injectable, OnModuleInit } from "@nestjs/common";
+import { PrismaClient } from "@prisma/client";
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
-  async onModuleInit() { await this.$connect(); }
+  async onModuleInit() {
+    await this.$connect();
+  }
 }
 ```
 
 - [ ] **Step 2: Create prisma.module.ts**
 
 ```typescript
-import { Global, Module } from '@nestjs/common';
-import { PrismaService } from './prisma.service';
+import { Global, Module } from "@nestjs/common";
+import { PrismaService } from "./prisma.service";
 
 @Global()
 @Module({ providers: [PrismaService], exports: [PrismaService] })
@@ -747,8 +777,13 @@ export class PrismaModule {}
 - [ ] **Step 3: Create http-exception.filter.ts**
 
 ```typescript
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from '@nestjs/common';
-import { Response } from 'express';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+} from "@nestjs/common";
+import { Response } from "express";
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
@@ -759,7 +794,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const body = exception.getResponse();
     response.status(status).json({
       status_code: status,
-      message: typeof body === 'object' ? (body as any).message : body,
+      message: typeof body === "object" ? (body as any).message : body,
       timestamp: new Date().toISOString(),
     });
   }
@@ -769,15 +804,15 @@ export class HttpExceptionFilter implements ExceptionFilter {
 - [ ] **Step 4: Update main.ts**
 
 ```typescript
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
-import { Logger } from 'nestjs-pino';
-import { AppModule } from './app.module';
+import { NestFactory } from "@nestjs/core";
+import { ValidationPipe } from "@nestjs/common";
+import { Logger } from "nestjs-pino";
+import { AppModule } from "./app.module";
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   app.useLogger(app.get(Logger));
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix("api/v1");
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   await app.listen(process.env.BACKEND_PORT ?? 3000);
 }
@@ -787,19 +822,22 @@ bootstrap();
 - [ ] **Step 5: Update app.module.ts**
 
 ```typescript
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { LoggerModule } from 'nestjs-pino';
-import { APP_FILTER } from '@nestjs/core';
-import { PrismaModule } from './prisma/prisma.module';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import { LoggerModule } from "nestjs-pino";
+import { APP_FILTER } from "@nestjs/core";
+import { PrismaModule } from "./prisma/prisma.module";
+import { HttpExceptionFilter } from "./common/filters/http-exception.filter";
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     LoggerModule.forRoot({
       pinoHttp: {
-        transport: process.env.NODE_ENV !== 'production' ? { target: 'pino-pretty' } : undefined,
+        transport:
+          process.env.NODE_ENV !== "production"
+            ? { target: "pino-pretty" }
+            : undefined,
       },
     }),
     PrismaModule,
@@ -821,6 +859,7 @@ git commit -m "feat(backend): add PrismaService, Pino logging, and global except
 ### Task 8: Supabase JWT Validation Guard
 
 **Files:**
+
 - Create: `backend/src/common/guards/supabase-jwt.guard.ts`
 - Create: `backend/src/common/decorators/get-user.decorator.ts`
 
@@ -829,18 +868,18 @@ git commit -m "feat(backend): add PrismaService, Pino logging, and global except
 - [ ] **Step 1: Create supabase-jwt.guard.ts**
 
 ```typescript
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { CanActivate, ExecutionContext } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { createClient } from '@supabase/supabase-js';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { CanActivate, ExecutionContext } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { createClient } from "@supabase/supabase-js";
 
 @Injectable()
 export class SupabaseJwtGuard implements CanActivate {
   private supabase: any;
 
   constructor(private config: ConfigService) {
-    const url = this.config.get<string>('SUPABASE_URL');
-    const key = this.config.get<string>('SUPABASE_ANON_KEY');
+    const url = this.config.get<string>("SUPABASE_URL");
+    const key = this.config.get<string>("SUPABASE_ANON_KEY");
     this.supabase = createClient(url, key);
   }
 
@@ -848,8 +887,10 @@ export class SupabaseJwtGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const authHeader = request.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Missing or invalid authorization header');
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      throw new UnauthorizedException(
+        "Missing or invalid authorization header",
+      );
     }
 
     const token = authHeader.slice(7);
@@ -857,12 +898,12 @@ export class SupabaseJwtGuard implements CanActivate {
     try {
       const { data, error } = await this.supabase.auth.getUser(token);
       if (error || !data.user) {
-        throw new UnauthorizedException('Invalid token');
+        throw new UnauthorizedException("Invalid token");
       }
       request.user = { id: data.user.id, email: data.user.email };
       return true;
     } catch {
-      throw new UnauthorizedException('Token validation failed');
+      throw new UnauthorizedException("Token validation failed");
     }
   }
 }
@@ -871,13 +912,13 @@ export class SupabaseJwtGuard implements CanActivate {
 - [ ] **Step 2: Create get-user.decorator.ts**
 
 ```typescript
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 
 export const GetUser = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {
     const request = ctx.switchToHttp().getRequest();
     return request.user;
-  }
+  },
 );
 ```
 
@@ -909,6 +950,7 @@ git commit -m "feat(backend): add Supabase JWT validation guard"
 ### Task 11: Transaction Module (TDD) with Create, Update, List, Delete
 
 **Files:**
+
 - Create: `backend/src/modules/transaction/dto/create-transaction.dto.ts`
 - Create: `backend/src/modules/transaction/dto/update-transaction.dto.ts`
 - Create: `backend/src/modules/transaction/transaction.service.ts`
@@ -917,6 +959,7 @@ git commit -m "feat(backend): add Supabase JWT validation guard"
 - Create: `backend/src/modules/transaction/transaction.module.ts`
 
 **Key Constraints:**
+
 - Create: Full control over type, amount, wallet, category, note, date
 - **Update: Limited to note, category, amount, and wallet_id ONLY**
   - Cannot change `type` (expense ↔ income ↔ transfer) — locked after creation
@@ -953,6 +996,7 @@ Use `@UseGuards(SupabaseJwtGuard)` on all controller methods.
 ### Task 15: Shared API Client + Types
 
 **Files:**
+
 - Create: `frontend/src/shared/types/index.ts`
 - Create: `frontend/src/shared/api/api-client.ts`
 - Create: `frontend/src/shared/hooks/use-auth.ts`
@@ -962,21 +1006,35 @@ Use `@UseGuards(SupabaseJwtGuard)` on all controller methods.
 
 ```typescript
 export interface Wallet {
-  id: string; name: string; balance: string;
-  type: 'cash' | 'bank' | 'e_wallet' | 'other';
+  id: string;
+  name: string;
+  balance: string;
+  type: "cash" | "bank" | "e_wallet" | "other";
 }
 export interface Category {
-  id: string; name: string; description: string | null;
-  type: 'expense' | 'income';
+  id: string;
+  name: string;
+  description: string | null;
+  type: "expense" | "income";
 }
-export interface Posting { id: string; wallet_id: string; amount: string; wallet: Wallet; }
+export interface Posting {
+  id: string;
+  wallet_id: string;
+  amount: string;
+  wallet: Wallet;
+}
 export interface Transaction {
-  id: string; type: 'expense' | 'income' | 'transfer';
-  note: string | null; occurred_at: string;
-  category: Category | null; postings: Posting[];
+  id: string;
+  type: "expense" | "income" | "transfer";
+  note: string | null;
+  occurred_at: string;
+  category: Category | null;
+  postings: Posting[];
 }
 export interface DashboardSummary {
-  net_worth: number; total_income: number; total_expense: number;
+  net_worth: number;
+  total_income: number;
+  total_expense: number;
   expense_by_category: { name: string; amount: number }[];
   month: string;
 }
@@ -989,10 +1047,10 @@ export interface PaginatedResponse<T> {
 - [ ] **Step 2: Create shared/api/api-client.ts**
 
 ```typescript
-import axios from 'axios';
-import { createClient } from '@supabase/supabase-js';
+import axios from "axios";
+import { createClient } from "@supabase/supabase-js";
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api/v1';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "/api/v1";
 export const apiClient = axios.create({ baseURL: BASE_URL });
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -1012,19 +1070,19 @@ apiClient.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       supabase.auth.signOut();
-      window.location.href = '/login';
+      window.location.href = "/login";
     }
     return Promise.reject(err);
-  }
+  },
 );
 ```
 
 - [ ] **Step 3: Create shared/hooks/use-auth.ts**
 
 ```typescript
-import { useState, useEffect } from 'react';
-import { supabase } from '../api/api-client';
-import type { User } from '@supabase/supabase-js';
+import { useState, useEffect } from "react";
+import { supabase } from "../api/api-client";
+import type { User } from "@supabase/supabase-js";
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -1037,7 +1095,9 @@ export function useAuth() {
       setIsLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
 
@@ -1045,7 +1105,10 @@ export function useAuth() {
   }, []);
 
   const login = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     if (error) throw error;
   };
 
@@ -1061,19 +1124,21 @@ export function useAuth() {
 - [ ] **Step 4: Update main.tsx**
 
 ```tsx
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { RouterProvider, createRouter } from '@tanstack/react-router';
-import { routeTree } from './routeTree.gen';
-import { useAuth } from './shared/hooks/use-auth';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { RouterProvider, createRouter } from "@tanstack/react-router";
+import { routeTree } from "./routeTree.gen";
+import { useAuth } from "./shared/hooks/use-auth";
 
 const router = createRouter({
   routeTree,
   context: { auth: undefined! },
 });
 
-declare module '@tanstack/react-router' {
-  interface Register { router: typeof router }
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
 }
 
 function App() {
@@ -1081,8 +1146,10 @@ function App() {
   return <RouterProvider router={router} context={{ auth }} />;
 }
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode><App /></React.StrictMode>
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
 );
 ```
 
@@ -1098,6 +1165,7 @@ git commit -m "feat(frontend): add API client, shared types, and Supabase Auth h
 ### Task 16: Auth Module + Routing (Frontend)
 
 **Files:**
+
 - Create: `frontend/src/modules/auth/services/auth.service.ts`
 - Modify: `frontend/src/routes/__root.tsx`
 - Create: `frontend/src/routes/login.tsx`
@@ -1112,7 +1180,7 @@ git commit -m "feat(frontend): add API client, shared types, and Supabase Auth h
 - [ ] **Step 1: Create auth/services/auth.service.ts**
 
 ```typescript
-import { supabase } from '../../../shared/api/api-client';
+import { supabase } from "../../../shared/api/api-client";
 
 export const authService = {
   login: (email: string, password: string) =>
@@ -1124,61 +1192,57 @@ export const authService = {
 };
 ```
 
-- [ ] **Step 2: Update src/routes/__root.tsx**
+- [ ] **Step 2: Update src/routes/\_\_root.tsx**
 
 ```tsx
-import { createRootRouteWithContext, Outlet } from '@tanstack/react-router';
-import type { useAuth } from '../shared/hooks/use-auth';
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import type { useAuth } from "../shared/hooks/use-auth";
 
 interface RouterContext {
   auth: ReturnType<typeof useAuth>;
 }
 
-export const Route = createRootRouteWithContext<RouterContext>()(
-  {
-    component: () => <Outlet />,
-  }
-);
+export const Route = createRootRouteWithContext<RouterContext>()({
+  component: () => <Outlet />,
+});
 ```
 
 - [ ] **Step 3: Create src/routes/login.tsx**
 
 ```tsx
-import { createFileRoute, useRouter } from '@tanstack/react-router';
-import { useState } from 'react';
-import { authService } from '../modules/auth/services/auth.service';
+import { createFileRoute, useRouter } from "@tanstack/react-router";
+import { useState } from "react";
+import { authService } from "../modules/auth/services/auth.service";
 
-export const Route = createFileRoute('/login')(
-  {
-    beforeLoad: ({ context }) => {
-      if (context.auth.isAuthenticated) {
-        throw Route.redirect({ to: '/' });
-      }
-    },
-    component: LoginPage,
-  }
-);
+export const Route = createFileRoute("/login")({
+  beforeLoad: ({ context }) => {
+    if (context.auth.isAuthenticated) {
+      throw Route.redirect({ to: "/" });
+    }
+  },
+  component: LoginPage,
+});
 
 function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     try {
       await authService.login(email, password);
       await router.invalidate();
-      router.navigate({ to: '/' });
+      router.navigate({ to: "/" });
     } catch {
-      setError('Invalid email or password');
+      setError("Invalid email or password");
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '100px auto', padding: 24 }}>
+    <div style={{ maxWidth: 400, margin: "100px auto", padding: 24 }}>
       <h1>Soegih</h1>
       <form onSubmit={handleSubmit}>
         <div>
@@ -1205,7 +1269,7 @@ function LoginPage() {
             />
           </label>
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
         <button type="submit">Login</button>
       </form>
     </div>
@@ -1216,8 +1280,8 @@ function LoginPage() {
 - [ ] **Step 4: Create src/shared/components/AppLayout.tsx**
 
 ```tsx
-import { Link, Outlet, useRouter } from '@tanstack/react-router';
-import { authService } from '../../modules/auth/services/auth.service';
+import { Link, Outlet, useRouter } from "@tanstack/react-router";
+import { authService } from "../../modules/auth/services/auth.service";
 
 interface Props {
   onLogout: () => void;
@@ -1230,17 +1294,17 @@ export default function AppLayout({ onLogout }: Props) {
     await authService.logout();
     onLogout();
     await router.invalidate();
-    router.navigate({ to: '/login' });
+    router.navigate({ to: "/login" });
   };
 
   return (
     <div>
       <nav
         style={{
-          display: 'flex',
+          display: "flex",
           gap: 16,
-          padding: '12px 24px',
-          borderBottom: '1px solid #eee',
+          padding: "12px 24px",
+          borderBottom: "1px solid #eee",
         }}
       >
         <Link to="/">Dashboard</Link>
@@ -1248,10 +1312,7 @@ export default function AppLayout({ onLogout }: Props) {
         <Link to="/categories">Categories</Link>
         <Link to="/transactions">Transactions</Link>
         <Link to="/ai">AI Assistant</Link>
-        <button
-          onClick={handleLogout}
-          style={{ marginLeft: 'auto' }}
-        >
+        <button onClick={handleLogout} style={{ marginLeft: "auto" }}>
           Logout
         </button>
       </nav>
@@ -1263,57 +1324,55 @@ export default function AppLayout({ onLogout }: Props) {
 }
 ```
 
-- [ ] **Step 5: Create src/routes/_app.tsx (pathless auth guard + layout)**
+- [ ] **Step 5: Create src/routes/\_app.tsx (pathless auth guard + layout)**
 
 ```tsx
-import { createFileRoute, redirect } from '@tanstack/react-router';
-import AppLayout from '../shared/components/AppLayout';
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import AppLayout from "../shared/components/AppLayout";
 
-export const Route = createFileRoute('/_app')(
-  {
-    beforeLoad: ({ context }) => {
-      if (!context.auth.isAuthenticated) {
-        throw redirect({ to: '/login' });
-      }
-    },
-    component: () => {
-      const { auth } = Route.useRouteContext();
-      return <AppLayout onLogout={auth.logout} />;
-    },
-  }
-);
+export const Route = createFileRoute("/_app")({
+  beforeLoad: ({ context }) => {
+    if (!context.auth.isAuthenticated) {
+      throw redirect({ to: "/login" });
+    }
+  },
+  component: () => {
+    const { auth } = Route.useRouteContext();
+    return <AppLayout onLogout={auth.logout} />;
+  },
+});
 ```
 
 - [ ] **Step 6: Create child route stubs**
 
 ```tsx
 // src/routes/_app/index.tsx
-import { createFileRoute } from '@tanstack/react-router';
-export const Route = createFileRoute('/_app/')({
+import { createFileRoute } from "@tanstack/react-router";
+export const Route = createFileRoute("/_app/")({
   component: () => <div>Dashboard</div>,
 });
 
 // src/routes/_app/wallets.tsx
-import { createFileRoute } from '@tanstack/react-router';
-export const Route = createFileRoute('/_app/wallets')({
+import { createFileRoute } from "@tanstack/react-router";
+export const Route = createFileRoute("/_app/wallets")({
   component: () => <div>Wallets</div>,
 });
 
 // src/routes/_app/categories.tsx
-import { createFileRoute } from '@tanstack/react-router';
-export const Route = createFileRoute('/_app/categories')({
+import { createFileRoute } from "@tanstack/react-router";
+export const Route = createFileRoute("/_app/categories")({
   component: () => <div>Categories</div>,
 });
 
 // src/routes/_app/transactions.tsx
-import { createFileRoute } from '@tanstack/react-router';
-export const Route = createFileRoute('/_app/transactions')({
+import { createFileRoute } from "@tanstack/react-router";
+export const Route = createFileRoute("/_app/transactions")({
   component: () => <div>Transactions</div>,
 });
 
 // src/routes/_app/ai.tsx
-import { createFileRoute } from '@tanstack/react-router';
-export const Route = createFileRoute('/_app/ai')({
+import { createFileRoute } from "@tanstack/react-router";
+export const Route = createFileRoute("/_app/ai")({
   component: () => <div>AI Assistant</div>,
 });
 ```
@@ -1336,6 +1395,7 @@ git commit -m "feat(frontend): add Supabase Auth, layout, and TanStack Router fi
 **Task 18 (Category):** Same as original plan — no auth changes needed. Import from shared API client.
 
 **Task 19 (Transaction):** Same as original plan, PLUS add transaction editing with constraints:
+
 - Add **TransactionEditModal** or **TransactionEditForm** component
 - Display transaction in list with "Edit" button
 - Modal/form shows only editable fields:
@@ -1368,6 +1428,7 @@ git commit -m "feat(frontend): add Supabase Auth, layout, and TanStack Router fi
 - [ ] **Step 1: Set up Supabase locally (optional)**
 
 For local development, you can use Supabase CLI:
+
 ```bash
 supabase start
 ```
@@ -1390,6 +1451,7 @@ docker-compose up --build
 - [ ] **Step 4: Create a test user in Supabase**
 
 Via Supabase dashboard or CLI:
+
 ```bash
 supabase auth admin create-user --email admin@soegih.app --password changeme123
 ```
@@ -1424,6 +1486,7 @@ Create a Supabase project at https://supabase.com (free tier available).
 - [ ] **Step 2: Prepare environment**
 
 On VPS:
+
 ```bash
 git clone <repo>
 cd <repo>
@@ -1471,6 +1534,7 @@ git commit -m "chore(deployment): production configuration with Supabase ready"
 **Key Difference:** Authentication is now delegated to **Supabase Auth**. No custom JWT logic in the backend. Frontend uses Supabase client for login/logout. Backend validates incoming Supabase JWT tokens via `SupabaseJwtGuard`.
 
 **Benefits:**
+
 - Simpler backend (no password hashing, JWT signing)
 - Built-in email verification, password reset, 2FA support
 - Secure token refresh handling

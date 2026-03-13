@@ -114,7 +114,7 @@ Users can edit transactions, but with strict limits:
 
 ## Tech Stack
 
-- Do not suggest alternatives to chosen tech: NestJS+Typescript, FastAPI+Python, React+Vite, Prisma, Postgres, TanStack Router/Table, Pino, JWT, LangChain
+- Do not suggest alternatives to chosen tech: NestJS+Typescript, FastAPI+Python, React+Vite, Prisma, Postgres, TanStack Router/Table/Query, Pino, JWT, LangChain
 - These are deliberate choices
 
 ## Test-Driven Development

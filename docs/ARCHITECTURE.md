@@ -39,7 +39,7 @@ All services communicate via HTTP/REST. Authentication is delegated to Supabase 
 │  └────────┬─────────┘  └────────┬─────────┘  │      │  │ │AI Proxy    │ │
 │           │                     │────────┐   │      │  │ │Module      │ │
 │           └──────────────┬───────┴────────┴───┘      │  │ └────────────┘ │
-│                    API Client (axios)               │  │                │
+│                 API Client (TanStack Query)         │  │                │
 │         ┌──────────────────────────────────┐        │  │ ┌────────────┐ │
 │         │ Auto-attach Supabase JWT token   │        │  │ │ Prisma ORM │ │
 │         └────────────┬─────────────────────┘        │  │ │Postgres DB │ │
@@ -72,7 +72,7 @@ All services communicate via HTTP/REST. Authentication is delegated to Supabase 
 2. Frontend calls `supabase.auth.signInWithPassword()`
 3. Supabase returns JWT token and sets session
 4. Frontend stores session in localStorage (Supabase handles this)
-5. For subsequent API calls, axios interceptor attaches JWT: `Authorization: Bearer <token>`
+5. For subsequent API calls, TanStack Query automatically attaches JWT: `Authorization: Bearer <token>`
 6. Backend `SupabaseJwtGuard` validates token against Supabase
 7. If valid, extracts `user.id` and attaches to request
 8. Controller receives authenticated user via `@GetUser()` decorator

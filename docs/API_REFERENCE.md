@@ -399,5 +399,99 @@ All errors follow this format:
 
 ---
 
+## Frontend API Usage with TanStack Query
+
+All frontend data fetching uses **TanStack Query** (`@tanstack/react-query`). Queries are automatically cached, deduped, and synchronized across the app.
+
+### Basic Query Pattern
+
+```typescript
+import { useQuery } from '@tanstack/react-query'
+
+// Fetch wallets
+function WalletList() {
+  const { data: wallets, isLoading, error } = useQuery({
+    queryKey: ['wallets'],
+    queryFn: async () => {
+      const res = await fetch('/api/v1/wallets', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      return res.json()
+    }
+  })
+
+  if (isLoading) return <div>Loading...</div>
+  if (error) return <div>Error: {error.message}</div>
+  return <ul>{wallets.map(w => <li key={w.id}>{w.name}</li>)}</ul>
+}
+```
+
+### Mutation Pattern
+
+```typescript
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+
+function CreateWallet() {
+  const queryClient = useQueryClient()
+  const { mutate, isPending } = useMutation({
+    mutationFn: async (data: CreateWalletBody) => {
+      const res = await fetch('/api/v1/wallets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(data)
+      })
+      return res.json()
+    },
+    onSuccess: () => {
+      // Invalidate wallets query to refetch
+      queryClient.invalidateQueries({ queryKey: ['wallets'] })
+    }
+  })
+
+  return (
+    <button onClick={() => mutate({ name: 'New Wallet', type: 'bank' })} disabled={isPending}>
+      {isPending ? 'Creating...' : 'Create Wallet'}
+    </button>
+  )
+}
+```
+
+### Paginated Queries (Transactions)
+
+```typescript
+import { useQuery } from '@tanstack/react-query'
+
+function TransactionList() {
+  const [page, setPage] = useState(1)
+  const { data, isLoading } = useQuery({
+    queryKey: ['transactions', { page, limit: 20 }],
+    queryFn: async () => {
+      const res = await fetch(`/api/v1/transactions?page=${page}&limit=20`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      return res.json()
+    }
+  })
+
+  return (
+    <>
+      <TransactionTable data={data?.data} />
+      <button onClick={() => setPage(p => p + 1)}>Next</button>
+    </>
+  )
+}
+```
+
+### Best Practices
+
+- **Query keys:** Structure as arrays with scope+variables: `['wallets']`, `['transactions', { page, limit }]`
+- **Dependencies:** Use query key variables (page, filters, etc.) to trigger automatic refetches
+- **Mutations:** Always invalidate related queries after create/update/delete
+- **Error handling:** Display user-friendly error messages from response `message` field
+- **Loading states:** Use `isLoading` for initial fetch, `isFetching` for background updates
+
+---
+
 **Last updated:** [Auto-updated after API changes]
 **Source:** Backend controllers in [backend/src/modules/](../backend/src/modules/)
+**Frontend:** [frontend/src/modules/](../frontend/src/modules/)
