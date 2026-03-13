@@ -101,7 +101,7 @@ All services communicate via HTTP/REST. Authentication is delegated to Supabase 
 
 **Create Category:**
 
-1. User submits category form (name, type: expense/income, color/icon)
+1. User submits category form (name, type: expense/income, description)
 2. Frontend POST `/api/v1/categories` with category data
 3. Backend validates user session and category type
 4. Prisma creates category record with user_id
@@ -116,7 +116,7 @@ All services communicate via HTTP/REST. Authentication is delegated to Supabase 
 
 **Update Category:**
 
-1. User edits category (name, color, type)
+1. User edits category (name, description, type)
 2. Frontend sends PATCH `/api/v1/categories/{id}` with changed fields
 3. Backend validates ownership and updates record
 4. Frontend updates local cache and re-renders
@@ -235,8 +235,8 @@ See [/backend/src/](../backend/src/) for the actual structure.
 
 - **Category Module** — CRUD for expense/income categories
   - `GET /api/v1/categories` — List categories (by type: expense/income)
-  - `POST /api/v1/categories` — Create category (name, type, metadata)
-  - `PATCH /api/v1/categories/:id` — Update category (name, metadata)
+  - `POST /api/v1/categories` — Create category (name, type, description)
+  - `PATCH /api/v1/categories/:id` — Update category (name, description, type)
   - `DELETE /api/v1/categories/:id` — Soft delete category
   - Validates category ownership; does not cascade delete transactions
 
