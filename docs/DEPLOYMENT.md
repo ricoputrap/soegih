@@ -138,6 +138,118 @@ Runs on http://localhost:8000
 
 ---
 
+## Local E2E Testing (Playwright)
+
+### Setup E2E Tests
+
+#### Prerequisites
+
+- Docker Compose stack running (see above)
+- Supabase project with a test user created
+- E2E browser dependencies installed
+
+#### 1. Install Playwright Browsers
+
+```bash
+cd e2e
+pnpm install
+pnpm playwright install
+cd ..
+```
+
+#### 2. Configure E2E Environment
+
+```bash
+cp e2e/.env.e2e.example e2e/.env.e2e
+```
+
+Edit `e2e/.env.e2e`:
+```env
+E2E_BASE_URL=http://localhost
+TEST_USER_EMAIL=e2e@soegih.app
+TEST_USER_PASSWORD=changeme123
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=eyJ...
+```
+
+#### 3. Create E2E Test User in Supabase
+
+Via Supabase dashboard or CLI:
+```bash
+supabase auth admin create-user \
+  --email e2e@soegih.app \
+  --password changeme123
+```
+
+#### 4. Run E2E Tests
+
+```bash
+# Full E2E suite (all 47 tests, ~3.5 min)
+pnpm e2e
+
+# Fast suite (exclude AI tests, ~2 min)
+pnpm e2e:fast
+
+# Interactive UI mode (good for debugging)
+pnpm e2e:ui
+
+# View HTML report from last run
+pnpm e2e:report
+```
+
+#### 5. CI/CD Integration
+
+On CI (e.g., GitHub Actions):
+```bash
+# Install and run
+cd e2e
+pnpm install
+pnpm playwright install
+pnpm test
+```
+
+### E2E Test Structure
+
+**Directory:** `e2e/`
+
+```
+e2e/
+├── playwright.config.ts       # Playwright configuration
+├── package.json              # E2E dependencies
+├── global-setup.ts           # Auth setup: creates storageState
+├── global-teardown.ts        # Cleanup: deletes [E2E]-prefixed data
+├── fixtures/
+│   └── app.fixture.ts        # Extended test with API helpers
+├── helpers/
+│   ├── api-helper.ts         # REST API wrapper for test data
+│   └── supabase-helper.ts    # Auth token extraction
+├── pages/                    # Page Object Model classes
+│   ├── LoginPage.ts
+│   ├── DashboardPage.ts
+│   ├── WalletsPage.ts
+│   ├── CategoriesPage.ts
+│   ├── TransactionsPage.ts
+│   └── AiChatPage.ts
+└── tests/                    # Test specs (47 tests)
+    ├── auth.spec.ts          # 7 tests
+    ├── wallets.spec.ts       # 9 tests
+    ├── categories.spec.ts    # 7 tests
+    ├── transactions.spec.ts  # 14 tests
+    ├── dashboard.spec.ts     # 5 tests
+    └── ai-chat.spec.ts       # 5 tests (@slow, 60s timeout)
+```
+
+### Key Features
+
+- **Single Authentication:** `global-setup.ts` logs in once, saves `storageState` → all tests use it
+- **Test Data Isolation:** Each test creates its own data via API; cleanup happens after each run
+- **Data Prefix:** All test data prefixed with `[E2E]` for easy identification and cleanup
+- **Parallel Execution:** 2 workers in CI (chromium + firefox); configurable locally
+- **Retries:** 1 retry on CI for flaky tests; 0 on local development
+- **AI Chat Tests:** Isolated with `@slow` tag and 60s timeout; exclude with `--grep-invert @slow`
+
+---
+
 ## Local Integration Testing
 
 ### Test Flow

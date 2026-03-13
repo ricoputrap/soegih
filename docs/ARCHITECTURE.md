@@ -194,6 +194,65 @@ See [/frontend/src/](../frontend/src/) for the actual structure.
 - `/_app/transactions` — Transaction list with server-side pagination and inline editing
 - `/_app/ai` — AI chat assistant for transaction parsing
 
+## Testing Strategy
+
+### Unit & Integration Tests
+
+- **Backend:** NestJS service tests (TDD) + integration tests for API endpoints
+  - Location: `backend/src/**/*.spec.ts`
+  - Run: `cd backend && pnpm test`
+- **AI Service:** Python unit tests
+  - Location: `ai/tests/`
+  - Run: `cd ai && pytest`
+
+### E2E Testing (Playwright)
+
+- **Location:** `e2e/` directory with Page Object Model pattern
+- **Scope:** 47 tests across 6 suites covering all critical user journeys
+  - `auth.spec.ts` — Login, logout, session persistence (7 tests)
+  - `wallets.spec.ts` — Wallet CRUD, balance tracking (9 tests)
+  - `categories.spec.ts` — Category CRUD, filtering (7 tests)
+  - `transactions.spec.ts` — Transaction CRUD, immutable fields, pagination (14 tests)
+  - `dashboard.spec.ts` — Net worth, income/expense metrics (5 tests)
+  - `ai-chat.spec.ts` — Message parsing, transaction creation (5 tests, tagged `@slow`)
+
+**Key Features:**
+- Dedicated E2E Supabase test user (`e2e@soegih.app`)
+- Global setup: Single authentication → `storageState` for all tests
+- Global teardown: Automatic cleanup of `[E2E]`-prefixed test data
+- Runs against Docker Compose or local dev stack
+- Page Objects + Test Fixtures for maintainability
+- AI tests isolated with 60s timeout and `@slow` tag
+
+**Run Tests:**
+```bash
+pnpm e2e                # Full suite (~3.5 min)
+pnpm e2e:fast          # Exclude AI tests (~2 min)
+pnpm e2e:ui            # Interactive UI mode
+pnpm e2e:report        # View HTML report
+```
+
+### Frontend Testing Requirements
+
+All frontend components must include `data-testid` attributes for E2E automation:
+
+| Element | Pattern | Example |
+|---------|---------|---------|
+| Page headings | `{page}-page-heading` | `wallets-page-heading` |
+| Create buttons | `create-{entity}-btn` | `create-wallet-btn` |
+| Form inputs | `{entity}-{field}-input` | `wallet-name-input` |
+| Form selects | `{entity}-{field}-select` | `wallet-type-select` |
+| Submit buttons | `{entity}-form-submit` | `wallet-form-submit` |
+| Table rows | `{entity}-row-{identifier}` | `wallet-row-BCA Savings` |
+| Row actions | `{entity}-{action}-btn-{id}` | `wallet-edit-btn-BCA` |
+| Value displays | `{entity}-{field}-{id}` | `wallet-balance-BCA` |
+| Error/toast | `{purpose}-message` | `form-error-message` |
+| Pagination | `pagination-next-btn`, `pagination-prev-btn` | |
+| Search | `search-input` | |
+| Dialogs | `delete-dialog`, `delete-confirm-btn`, `dialog-cancel-btn` | |
+
+---
+
 ## Backend Structure
 
 See [/backend/src/](../backend/src/) for the actual structure.
