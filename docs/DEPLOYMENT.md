@@ -53,8 +53,8 @@ docker-compose up --build
 ```
 
 This starts:
-- **Caddy** on http://localhost (reverse proxy)
-- **Frontend** on http://localhost/ (Nginx SPA)
+- **Caddy** on http://localhost (reverse proxy, serves static frontend assets)
+- **Frontend** builds as static assets, served by Caddy
 - **Backend** on http://localhost/api/v1 (NestJS, port 3000 internal)
 - **AI Service** on port 8000 (internal, FastAPI)
 

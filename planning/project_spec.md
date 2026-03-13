@@ -26,7 +26,7 @@ Manages wallets, expense/income categories, and transactions (expense, income, t
 
 | Layer | Choice |
 |---|---|
-| Frontend | React + Vite (CSR), served by nginx; TanStack Router (file-based); TanStack Table for data tables |
+| Frontend | React + Vite (CSR), static assets served by Caddy; TanStack Router (file-based); TanStack Table for data tables |
 | Backend | NestJS + TypeScript |
 | AI Service | Python FastAPI + LangChain |
 | ORM | Prisma |
@@ -34,7 +34,7 @@ Manages wallets, expense/income categories, and transactions (expense, income, t
 | Auth | JWT (single user in DB) |
 | AI Model | OpenAI API (`gpt-4o-mini`) via LangChain |
 | Logging | Pino via `nestjs-pino` |
-| Reverse proxy | Caddy (auto HTTPS) |
+| Reverse proxy | Caddy (auto HTTPS, routing, static file serving) |
 | Deployment | Docker Compose on VPS |
 
 ### 2. UI/UX Design Principles
@@ -113,7 +113,7 @@ soegih/
 └── .env.example
 ```
 
-Docker Compose containers: `caddy`, `frontend` (nginx), `backend` (NestJS), `ai` (FastAPI).
+Docker Compose containers: `caddy`, `frontend`, `backend` (NestJS), `ai` (FastAPI). Frontend builds static assets that Caddy serves.
 
 ### 5. Data Schema
 

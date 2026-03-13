@@ -13,75 +13,55 @@ All services communicate via HTTP/REST. Authentication is delegated to Supabase 
 ## System Diagram
 
 ```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                  Frontend (React + Vite)                                     │
-│  ┌──────────────────┐  ┌──────────────────┐                                  │
-│  │  Auth Module     │  │  Dashboard       │                                  │
-│  │  (Supabase)      │  │  (Net Worth,     │                                  │
-│  └────────┬─────────┘  │   Expense Chart) │                                  │
-│           │            └─────────┬────────┘                                  │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────┐  ┌───────────┐ │
-│  │ Wallet Module    │  │ Category Module  │  │ Transaction  │  │ AI Chat   │ │
-│  │ (CRUD, Balance)  │  │ (CRUD)           │  │ Module       │  │ Module    │ │
-│  │                  │  │                  │  │ (CRUD)       │  │ (Parser)  │ │
-│  └────────┬─────────┘  └────────┬─────────┘  └──────┬───────┘  └────┬──────┘ │
-│           │                      │                │                          │
-│           └──────────────┬───────┴────────────────┘                          │
-│                    API Client (axios)                                        │
-│         ┌──────────────────────────────────┐                                 │
-│         │ Auto-attach Supabase JWT token   │                                 │
-│         └────────────┬─────────────────────┘                                 │
-└──────────────────────┼───────────────────────────────────────────────────────┘
-                       │ HTTP + Bearer Token
-┌──────────────────────▼───────────────────────────────────────────────┐
-│           Backend (NestJS + Prisma + Postgres)                       │
-│                                                                      │
-│  ┌────────────────────────────────────────────────────┐              │
-│  │           SupabaseJwtGuard (All Routes)            │              │
-│  │      Validates JWT → Extracts User ID              │              │
-│  └────────────────────────────────────────────────────┘              │
-│                                                                      │
-│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐    │
-│  │ Wallet API       │  │ Category API     │  │ Transaction API  │    │
-│  │ GET /wallets     │  │ GET /categories  │  │ GET /trans       │    │
-│  │ POST /wallets    │  │ POST /categories │  │ POST /trans      │    │
-│  │ PATCH /wallets/:id  │  │ PATCH /cats/:id  │  │ PATCH /trans/:id │    │
-│  │ DELETE /wallets/:id │  │ DELETE /cats/:id │  │ DELETE /trans/:id│    │
-│  └──────┬──────────┘  └────────┬────────┘  └────────┬───────┘    │
-│         │                  │                │           │
-│  ┌──────┴──────────┐  ┌────┴─────────────┐  │           │
-│  │  Dashboard API  │  │  AI Proxy Module │  │           │
-│  │  GET /dashboard │  │  Chat Parser     │  │           │
-│  └────────┬────────┘  └────┬─────────────┘  │           │
-│           │                │                │           │
-│           └────────────────┼────────────────┘           │
-│                            │                            │
-│            ┌───────────────┼───────────────┐            │
-│            │               │               │            │
-│     ┌──────▼──────┐ ┌──────▼────────┐ ┌────▼────────┐   │
-│     │   Prisma    │ │ Postgres DB   │ │ GetUser     │   │
-│     │   ORM       │ │ (Tables:      │ │ Decorator   │   │
-│     │             │ │ users,        │ │             │   │
-│     │             │ │ wallets,      │ │             │   │
-│     │             │ │ categories,   │ │             │   │
-│     │             │ │ transactions) │ │             │   │
-│     └─────────────┘ └───────────────┘ └─────────────┘   │
-└─────────────────────────────────────────────────────────┘
-           │                          │
-           │                          │
-    ┌──────▼────────┐          ┌──────▼──────────┐
-    │  Supabase     │          │  AI Service     │
-    │  Auth         │          │  (FastAPI)      │
-    │  (JWT Secret) │          │                 │
-    │               │          │  LangChain +    │
-    │               │          │  gpt-4o-mini    │
-    │               │          │                 │
-    │               │          │  POST /ai/chat  │
-    │               │          │  Parse natural  │
-    │               │          │  language →     │
-    │               │          │  structured     │
-    │               │          │  transaction    │
-    └───────────────┘          └─────────────────┘
+┌────────────────────────────────────────────────────────┐
+│         Caddy Reverse Proxy (Port 80/443)              │
+│  Routes /api/* → Backend | All others → Frontend       │
+└────────────────┬─────────────────────────────────────┘
+                 │
+    ┌────────────┴──────────────┐
+    │                           │
+┌───▼──────────────────────────────────────────────────┐  ┌───────────────┐
+│          Frontend (React + Vite)                     │  │  Backend      │
+│  ┌──────────────────┐  ┌──────────────────┐         │  │ (NestJS +     │
+│  │  Auth Module     │  │  Dashboard       │         │  │ Prisma +      │
+│  │  (Supabase)      │  │  (Net Worth,     │         │  │ Postgres)     │
+│  └────────┬─────────┘  │   Expense Chart) │         │  │               │
+│           │            └─────────┬────────┘         │  │ ┌────────────┐ │
+│  ┌──────────────────┐  ┌──────────────────┐         │  │ │Wallet API  │ │
+│  │ Wallet Module    │  │ Category Module  │         │  │ │Category API│ │
+│  │ (CRUD, Balance)  │  │ (CRUD)           │         │  │ │Transaction │ │
+│  │                  │  │                  │         │  │ │ & Dashboard│ │
+│  └────────┬─────────┘  └────────┬─────────┘         │  │ │   APIs     │ │
+│           │                      │       ┐          │  │ │            │ │
+│  ┌──────────────────┐  ┌──────────────────┐  │      │  │ └────────────┘ │
+│  │ Transaction      │  │ AI Chat Module   │  │      │  │                │
+│  │ Module (CRUD)    │  │ (Parser)         │  │      │  │ ┌────────────┐ │
+│  └────────┬─────────┘  └────────┬─────────┘  │      │  │ │AI Proxy    │ │
+│           │                     │────────┐   │      │  │ │Module      │ │
+│           └──────────────┬───────┴────────┴───┘      │  │ └────────────┘ │
+│                    API Client (axios)               │  │                │
+│         ┌──────────────────────────────────┐        │  │ ┌────────────┐ │
+│         │ Auto-attach Supabase JWT token   │        │  │ │ Prisma ORM │ │
+│         └────────────┬─────────────────────┘        │  │ │Postgres DB │ │
+│                      │                              │  │ └────────────┘ │
+└──────────────────────┼──────────────────────────────┘  └───┬────────────┘
+                       │ HTTP + Bearer Token                  │
+                       └──────────────────────────────────────┘
+                                  │
+                    ┌─────────────┴─────────────┐
+                    │                           │
+            ┌───────▼─────────┐        ┌────────▼──────────┐
+            │  Supabase Auth  │        │  AI Service       │
+            │  (JWT Secret)   │        │  (FastAPI)        │
+            │                 │        │                   │
+            │                 │        │  LangChain +      │
+            │                 │        │  gpt-4o-mini      │
+            │                 │        │                   │
+            │                 │        │  POST /ai/chat    │
+            │                 │        │  Parse natural    │
+            │                 │        │  language →       │
+            │                 │        │  transaction      │
+            └─────────────────┘        └───────────────────┘
 ```
 
 ## Data Flow
@@ -285,17 +265,19 @@ See [docker-compose.yml](../docker-compose.yml) for actual config.
 
 **Services:**
 
-- **caddy** — Reverse proxy on port 80, routes `/api/*` → backend, others → frontend
-- **frontend** — Nginx serving React SPA on port 80 (internal)
-- **backend** — NestJS app on port 3000 (internal)
-- **ai** — FastAPI on port 8000 (internal)
+- **caddy** — Reverse proxy on port 80/443, routes `/api/*` → backend, serves static frontend assets
+- **backend** — NestJS app on port 3000 (internal only)
+- **ai** — FastAPI on port 8000 (internal only)
+- **db** — PostgreSQL on port 5432 (internal only)
 
 **Environment:**
 
 - Backend connects to Postgres via `DATABASE_URL`
 - Backend validates Supabase JWT via `SUPABASE_URL` + `SUPABASE_ANON_KEY`
-- Frontend uses `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` for Supabase client
+- Frontend is built as static assets (Vite build output) and served by Caddy
+- Frontend uses `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` at build time for Supabase client
 - AI service uses `OPENAI_API_KEY` for LLM access
+- Caddy automatically handles HTTPS, redirects, and static file serving
 
 ## Database Schema
 

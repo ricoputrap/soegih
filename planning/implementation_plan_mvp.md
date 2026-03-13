@@ -4,7 +4,7 @@
 
 **Goal:** Build and deploy the Soegih MVP — a single-user personal finance web app with wallet management, transaction tracking, and AI-powered natural language transaction entry.
 
-**Architecture:** Monorepo with three services (NestJS backend, Python FastAPI AI service, React frontend) communicating via REST. Backend handles all business logic and data persistence via Prisma + Supabase Postgres. The AI service is a stateless parser that converts natural language to structured transaction data. Frontend is a CSR React app served by nginx behind Caddy. **Authentication is handled by Supabase Auth** (no custom auth logic).
+**Architecture:** Monorepo with three services (NestJS backend, Python FastAPI AI service, React frontend) communicating via REST. Backend handles all business logic and data persistence via Prisma + Supabase Postgres. The AI service is a stateless parser that converts natural language to structured transaction data. Frontend is a CSR React app built as static assets and served by Caddy (single reverse proxy). **Authentication is handled by Supabase Auth** (no custom auth logic).
 
 **Tech Stack:** NestJS + TypeScript + Prisma, Python FastAPI + LangChain + gpt-4o-mini, React + Vite, Postgres (Supabase), Supabase Auth, Pino logging, Caddy reverse proxy, Docker Compose.
 
@@ -209,7 +209,6 @@ git commit -m "chore: scaffold React frontend with TanStack Router"
 - Create: `backend/Dockerfile`
 - Create: `ai/Dockerfile`
 - Create: `frontend/Dockerfile`
-- Create: `frontend/nginx.conf`
 
 - [ ] **Step 1: Create backend/Dockerfile**
 
@@ -244,20 +243,7 @@ EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-- [ ] **Step 3: Create frontend/nginx.conf**
-
-```nginx
-server {
-    listen 80;
-    root /usr/share/nginx/html;
-    index index.html;
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
-
-- [ ] **Step 4: Create frontend/Dockerfile**
+- [ ] **Step 3: Create frontend/Dockerfile**
 
 ```dockerfile
 FROM node:20-alpine AS builder
@@ -268,13 +254,15 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
+FROM node:20-alpine
+WORKDIR /app
+# Copy dist to /app/dist where it can be mounted to Caddy
+COPY --from=builder /app/dist /app/dist
+# Keep container running (Caddy serves the files via volume mount)
+CMD ["sleep", "infinity"]
 ```
 
-- [ ] **Step 5: Create docker-compose.yml**
+- [ ] **Step 4: Create docker-compose.yml**
 
 ```yaml
 version: "3.9"
@@ -288,6 +276,7 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
+      - frontend_dist:/srv/www:ro
     depends_on:
       - backend
       - frontend
@@ -295,6 +284,8 @@ services:
   frontend:
     build: ./frontend
     restart: unless-stopped
+    volumes:
+      - frontend_dist:/app/dist
 
   backend:
     build: ./backend
@@ -311,9 +302,10 @@ services:
 volumes:
   caddy_data:
   caddy_config:
+  frontend_dist:
 ```
 
-- [ ] **Step 6: Create Caddyfile**
+- [ ] **Step 5: Create Caddyfile**
 
 ```
 :80 {
@@ -321,17 +313,18 @@ volumes:
         reverse_proxy backend:3000
     }
     handle {
-        reverse_proxy frontend:80
+        root /srv/www
+        file_server
     }
 }
 ```
 
 (For production with a real domain, replace `:80` with `yourdomain.com` — Caddy handles HTTPS automatically.)
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add docker-compose.yml Caddyfile backend/Dockerfile ai/Dockerfile frontend/Dockerfile frontend/nginx.conf
+git add docker-compose.yml Caddyfile backend/Dockerfile ai/Dockerfile frontend/Dockerfile
 git commit -m "chore: add Docker Compose and Caddy config"
 ```
 

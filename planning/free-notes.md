@@ -100,7 +100,7 @@ Deleted records stop participating in the constraint naturally, no need to mutat
 
 ### Frontend → React + Vite (CSR)
 
-- Static files served by nginx
+- Static files served by Caddy (single reverse proxy)
 - SSR (Next.js) is overkill: app is behind auth, no SEO needed, adds operational complexity
 - CSR = simpler deployment, lower complexity
 
@@ -124,7 +124,7 @@ Deleted records stop participating in the constraint naturally, no need to mutat
 ```
 caddy (reverse proxy, port 80/443)
   ├── /api → nestjs container
-  └── /    → nginx container serving Vite static build
+  └── /    → serves static Vite build directly
 ```
 
 Supabase Postgres is external — no Postgres in Docker.
