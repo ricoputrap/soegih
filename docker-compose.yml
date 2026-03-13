@@ -1,0 +1,38 @@
+version: "3.9"
+services:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+      - frontend_dist:/srv/www:ro
+    depends_on:
+      - backend
+      - frontend
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    volumes:
+      - frontend_dist:/app/dist
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      - ai
+
+  ai:
+    build: ./ai
+    restart: unless-stopped
+    env_file: .env
+
+volumes:
+  caddy_data:
+  caddy_config:
+  frontend_dist:
