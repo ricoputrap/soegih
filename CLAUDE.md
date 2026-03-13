@@ -6,6 +6,60 @@
 - **Medium-to-advanced tasks** (multiple files, architectural decisions, complex business logic): Pair with user before implementation
 - When in doubt, ask the user
 
+## Branching & Code Review Strategy
+
+**Never push directly to master.** Use feature branches with task-based naming and pull requests for all changes.
+
+### Branch Naming Convention
+
+Branch names follow the pattern: `feat/task-{N}-{description}` or `fix/task-{N}-{description}`
+
+Where `{N}` is the task number from `planning/implementation_plan_mvp.md` and `{description}` is a short kebab-case description.
+
+**Examples:**
+- `feat/task-1-monorepo-setup`
+- `feat/task-6-prisma-schema`
+- `feat/task-17-wallet-frontend`
+- `fix/task-11-transaction-validation`
+
+### Workflow
+
+1. **Create feature branch** from `master`:
+   ```bash
+   git checkout -b feat/task-{N}-{description}
+   ```
+
+2. **Implement the task** (following TDD for backend, test coverage as needed for frontend)
+
+3. **Run tests** before committing:
+   ```bash
+   cd backend && pnpm test     # Backend unit + integration tests
+   cd frontend && pnpm test    # Frontend unit tests
+   cd ai && pytest             # AI service tests
+   ```
+
+4. **Commit with conventional commit message**:
+   ```
+   feat(scope): description
+
+   - Task {N}: bullet list of changes
+   ```
+
+5. **Push to origin and open PR**:
+   ```bash
+   git push -u origin feat/task-{N}-{description}
+   gh pr create --title "Task {N}: {description}" --body "..."
+   ```
+
+6. **Code review & tests pass** → merge to master via PR (no force-push)
+
+### Multi-File Changes & Planning
+
+For medium-to-advanced tasks involving multiple files or architectural decisions:
+- Create a plan using `superpowers:writing-plans` before opening the PR
+- Request review with `superpowers:requesting-code-review` after implementation
+- Merge only after code review approval
+
 ## Naming Conventions
 
 Follow these exactly (from project_spec.md section 8):
