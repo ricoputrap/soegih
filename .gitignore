@@ -1,0 +1,15 @@
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.local
+dist/
+build/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+*.log
+logs/
+.worktrees/
