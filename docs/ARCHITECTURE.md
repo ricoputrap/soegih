@@ -13,39 +13,41 @@ All services communicate via HTTP/REST. Authentication is delegated to Supabase 
 ## System Diagram
 
 ```
-┌────────────────────────────────────────────────────────────┐
-│                  Frontend (React + Vite)                   │
-│  ┌──────────────────┐  ┌──────────────────┐                │
-│  │  Auth Module     │  │  Dashboard       │                │
-│  │  (Supabase)      │  │  (Net Worth,     │                │
-│  └────────┬─────────┘  │   Expense Chart) │                │
-│           │            └─────────┬────────┘                │
-│  ┌────────┴──────────┐  ┌────────┴────────┐  ┌───────────┐ │
-│  │ Wallet Module     │  │ Transaction     │  │ AI Chat   │ │
-│  │ (CRUD, Balance)   │  │ Module(List,    │  │ Module    │ │
-│  │                   │  │ Create, Delete) │  │ (Parser)  │ │
-│  └────────┬──────────┘  └────────┬────────┘  └────┬──────┘ │
-│           │                      │                │        │
-│           └──────────────────────┴────────────────┘        │
-│                    API Client (axios)                      │
-│         ┌──────────────────────────────────┐               │
-│         │ Auto-attach Supabase JWT token   │               │
-│         └────────────┬─────────────────────┘               │
-└──────────────────────┼─────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                  Frontend (React + Vite)                                     │
+│  ┌──────────────────┐  ┌──────────────────┐                                  │
+│  │  Auth Module     │  │  Dashboard       │                                  │
+│  │  (Supabase)      │  │  (Net Worth,     │                                  │
+│  └────────┬─────────┘  │   Expense Chart) │                                  │
+│           │            └─────────┬────────┘                                  │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────┐  ┌───────────┐ │
+│  │ Wallet Module    │  │ Category Module  │  │ Transaction  │  │ AI Chat   │ │
+│  │ (CRUD, Balance)  │  │ (CRUD)           │  │ Module       │  │ Module    │ │
+│  │                  │  │                  │  │ (CRUD)       │  │ (Parser)  │ │
+│  └────────┬─────────┘  └────────┬─────────┘  └──────┬───────┘  └────┬──────┘ │
+│           │                      │                │                          │
+│           └──────────────┬───────┴────────────────┘                          │
+│                    API Client (axios)                                        │
+│         ┌──────────────────────────────────┐                                 │
+│         │ Auto-attach Supabase JWT token   │                                 │
+│         └────────────┬─────────────────────┘                                 │
+└──────────────────────┼───────────────────────────────────────────────────────┘
                        │ HTTP + Bearer Token
-┌──────────────────────▼──────────────────────────────────┐
-│           Backend (NestJS + Prisma + Postgres)          │
-│                                                         │
-│  ┌────────────────────────────────────────────────────┐ │
-│  │           SupabaseJwtGuard (All Routes)            │ │
-│  │      Validates JWT → Extracts User ID              │ │
-│  └────────────────────────────────────────────────────┘ │
-│                                                         │
-│  ┌──────────────┐  ┌──────────────┐  ┌─────────────┐    │
-│  │ Wallet API   │  │ Category API │  │ Transaction │    │
-│  │ CRUD         │  │ CRUD         │  │ API         │    │
-│  │ GET /wallets │  │ GET /cats    │  │ POST        │    │
-│  └──────┬───────┘  └───────┬──────┘  └──────┬──────┘    │
+┌──────────────────────▼───────────────────────────────────────────────┐
+│           Backend (NestJS + Prisma + Postgres)                       │
+│                                                                      │
+│  ┌────────────────────────────────────────────────────┐              │
+│  │           SupabaseJwtGuard (All Routes)            │              │
+│  │      Validates JWT → Extracts User ID              │              │
+│  └────────────────────────────────────────────────────┘              │
+│                                                                      │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐    │
+│  │ Wallet API       │  │ Category API     │  │ Transaction API  │    │
+│  │ GET /wallets     │  │ GET /categories  │  │ GET /trans       │    │
+│  │ POST /wallets    │  │ POST /categories │  │ POST /trans      │    │
+│  │ PATCH /wallets/:id  │  │ PATCH /cats/:id  │  │ PATCH /trans/:id │    │
+│  │ DELETE /wallets/:id │  │ DELETE /cats/:id │  │ DELETE /trans/:id│    │
+│  └──────┬──────────┘  └────────┬────────┘  └────────┬───────┘    │
 │         │                  │                │           │
 │  ┌──────┴──────────┐  ┌────┴─────────────┐  │           │
 │  │  Dashboard API  │  │  AI Proxy Module │  │           │
@@ -94,6 +96,40 @@ All services communicate via HTTP/REST. Authentication is delegated to Supabase 
 6. Backend `SupabaseJwtGuard` validates token against Supabase
 7. If valid, extracts `user.id` and attaches to request
 8. Controller receives authenticated user via `@GetUser()` decorator
+
+### Category CRUD Flow
+
+**Create Category:**
+
+1. User submits category form (name, type: expense/income, color/icon)
+2. Frontend POST `/api/v1/categories` with category data
+3. Backend validates user session and category type
+4. Prisma creates category record with user_id
+5. Frontend receives category ID and adds to local list
+
+**Read Categories:**
+
+1. Frontend fetches on module load: GET `/api/v1/categories`
+2. Backend returns all non-deleted categories for authenticated user
+3. Frontend stores in React state/cache, displays in dropdown or list
+4. Categories are client-side cached (fetched once per app session)
+
+**Update Category:**
+
+1. User edits category (name, color, type)
+2. Frontend sends PATCH `/api/v1/categories/{id}` with changed fields
+3. Backend validates ownership and updates record
+4. Frontend updates local cache and re-renders
+5. If category is used in transactions, no cascading effects (transactions retain original category_id)
+
+**Delete Category (Soft Delete):**
+
+1. User clicks delete on category
+2. Frontend POST `/api/v1/categories/{id}/delete` (or DELETE with soft-delete handling)
+3. Backend sets `deleted_at` timestamp (soft delete)
+4. Existing transactions keep their category_id (doesn't break references)
+5. Deleted category hidden from future dropdowns (WHERE deleted_at IS NULL)
+6. Frontend removes from category list
 
 ### Transaction Creation Flow
 
@@ -149,15 +185,34 @@ See [/frontend/src/](../frontend/src/) for the actual structure.
 - `src/routes/` — TanStack Router file-based routes
 - `src/shared/` — Shared components, hooks, types, API client
 
+**Module Responsibilities:**
+
+- **Auth Module** — Supabase login/signup, session management, token storage
+- **Wallet Module** — Display wallet list, create/edit/delete wallets, show balance
+  - Client-side caching (fetch once per session)
+  - Uses TanStack Table for client-side sorting/filtering
+- **Category Module** — Dropdown selection, create/edit/delete categories
+  - Client-side caching (categories are static per user per session)
+  - Category list available as context for transaction forms
+- **Transaction Module** — Full CRUD with constraints
+  - **Create:** Form with wallet/category dropdowns, AI parser support
+  - **Read:** Server-side paginated list (GET /api/v1/transactions with `page`, `limit`)
+  - **Update:** Modal/inline edit of note, category, amount, wallet (type & date locked)
+  - **Delete:** Soft delete via API
+- **Dashboard Module** — Net worth, income/expense breakdown for current month
+- **AI Module** — Chat interface for transaction parsing
+  - User inputs natural language → AI service parses → confirmation card
+  - On confirm, creates transaction via normal Transaction API
+
 **Routes:**
 
-- `/login` — Login page
-- `/_app` — Protected layout (checks `isAuthenticated`)
-- `/_app/` — Dashboard
-- `/_app/wallets` — Wallet management
-- `/_app/categories` — Category management
-- `/_app/transactions` — Transaction list with server-side pagination
-- `/_app/ai` — AI chat assistant
+- `/login` — Login page (public)
+- `/_app` — Protected layout wrapper (checks `isAuthenticated`)
+- `/_app/` — Dashboard (net worth, charts)
+- `/_app/wallets` — Wallet CRUD management
+- `/_app/categories` — Category CRUD management
+- `/_app/transactions` — Transaction list with server-side pagination and inline editing
+- `/_app/ai` — AI chat assistant for transaction parsing
 
 ## Backend Structure
 
@@ -171,11 +226,34 @@ See [/backend/src/](../backend/src/) for the actual structure.
 
 **Main modules:**
 
-- **Wallet** — CRUD for user wallets
-- **Category** — CRUD for expense/income categories
-- **Transaction** — Create, list, delete transactions; handles balance updates
-- **Dashboard** — Current month summary (net worth, income, expense breakdown)
-- **AI** — Proxy to Python AI service; confirms parsed transactions
+- **Wallet Module** — CRUD for user wallets
+  - `GET /api/v1/wallets` — List user wallets
+  - `POST /api/v1/wallets` — Create wallet
+  - `PATCH /api/v1/wallets/:id` — Update wallet (name, type, balance)
+  - `DELETE /api/v1/wallets/:id` — Soft delete wallet
+  - Validates wallet ownership (user_id match)
+
+- **Category Module** — CRUD for expense/income categories
+  - `GET /api/v1/categories` — List categories (by type: expense/income)
+  - `POST /api/v1/categories` — Create category (name, type, metadata)
+  - `PATCH /api/v1/categories/:id` — Update category (name, metadata)
+  - `DELETE /api/v1/categories/:id` — Soft delete category
+  - Validates category ownership; does not cascade delete transactions
+
+- **Transaction Module** — Full CRUD with complex validation and balance updates
+  - `GET /api/v1/transactions` — Paginated list (query: page, limit, filters)
+  - `POST /api/v1/transactions` — Create transaction, update wallet balances
+  - `PATCH /api/v1/transactions/:id` — Update transaction (immutable: type, occurred_at)
+  - `DELETE /api/v1/transactions/:id` — Soft delete and reverse postings
+  - Atomic operations: updates wallet balances within Prisma transaction
+  - Validates wallet/category ownership and type constraints
+
+- **Dashboard Module** — Current month summary
+  - `GET /api/v1/dashboard` — Net worth, income/expense breakdown, top categories
+
+- **AI Module** — Proxy to Python AI service
+  - `POST /api/v1/ai/chat` — Send message + context, get parsed transaction suggestion
+  - `POST /api/v1/ai/chat/confirm` — Confirm parsed transaction, create via transaction API
 
 **Guards & Middleware:**
 
