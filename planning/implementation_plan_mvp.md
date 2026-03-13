@@ -10,6 +10,252 @@
 
 ---
 
+## Execution Strategy
+
+### Overview
+
+This plan uses a **mixed-approach execution model**: sequential dependencies are honored, but independent tasks are parallelized using subagents. The implementation is organized into **9 batches** with clear checkpoint reviews between batches.
+
+**Branching & PR Workflow** (per CLAUDE.md):
+- Each task gets its own feature branch: `feat/task-{N}-{description}` or `fix/task-{N}-{description}`
+- Each batch's tasks open PRs independently
+- Code review + tests must pass before merging to `master`
+- No direct master pushes
+
+### Batches & Execution Approach
+
+#### **BATCH 1: Monorepo Root Setup** (Prerequisite) — SEQUENTIAL
+**Execution:** Single task (blocking all others)
+
+| Task | Description | Duration | Branch |
+|------|-------------|----------|--------|
+| 1 | `.gitignore`, `.env.example`, commit | ~10 min | `feat/task-1-monorepo-setup` |
+
+**Checkpoint:** Task 1 PR → code review → merge to master before proceeding to Batch 2.
+
+---
+
+#### **BATCH 2: Service Scaffolding** — PARALLEL (2-4) + SEQUENTIAL (5)
+**Execution:** Dispatch 3 subagents in parallel for Tasks 2-4, then 1 subagent for Task 5 after they complete.
+
+| Task | Description | Dependencies | Duration | Branch |
+|------|-------------|--------------|----------|--------|
+| 2 | NestJS scaffold + deps | None | ~15 min | `feat/task-2-nestjs-scaffold` |
+| 3 | Python FastAPI scaffold | None | ~15 min | `feat/task-3-python-ai-scaffold` |
+| 4 | React + TanStack Router | None | ~15 min | `feat/task-4-react-frontend-scaffold` |
+| 5 | Docker Compose + Caddy | Tasks 2,3,4 ✓ | ~10 min | `feat/task-5-docker-caddy-setup` |
+
+**Execution Plan:**
+1. After Batch 1 merges, dispatch **3 subagents in parallel** for Tasks 2, 3, 4
+2. Each subagent opens its own PR independently
+3. Batch review & merge all 3 PRs
+4. Task 5 runs **sequentially** after all 3 PRs are merged
+5. Task 5 opens PR → code review → merge
+
+**Checkpoint:** All tasks merged before proceeding to Batch 3.
+
+---
+
+#### **BATCH 3: Backend Foundation** — SEQUENTIAL
+**Execution:** Tasks must run sequentially (strict dependencies: 6→7→8)
+
+| Task | Description | Dependencies | Duration | Branch |
+|------|-------------|--------------|----------|--------|
+| 6 | Prisma schema + migrations | Task 2 ✓ | ~20 min | `feat/task-6-prisma-schema` |
+| 7 | Prisma service + app bootstrap | Task 6 ✓ | ~15 min | `feat/task-7-prisma-service` |
+| 8 | Supabase JWT guard | Task 7 ✓ | ~15 min | `feat/task-8-supabase-jwt-guard` |
+
+**Execution Plan:**
+1. Task 6 → PR → code review → merge
+2. Task 7 → PR → code review → merge
+3. Task 8 → PR → code review → merge
+
+**Note:** Each task opens PR only after previous task merges.
+
+**Checkpoint:** All tasks merged before proceeding to Batches 4 & 5.
+
+---
+
+#### **BATCH 4: Backend Wallet & Category** — PARALLEL
+**Execution:** Dispatch 2 subagents in parallel (both depend on Task 8 being merged)
+
+| Task | Description | Dependencies | Duration | Branch |
+|------|-------------|--------------|----------|--------|
+| 9 | Wallet module (TDD) | Task 8 ✓ | ~60 min | `feat/task-9-wallet-module` |
+| 10 | Category module (TDD) | Task 8 ✓ | ~60 min | `feat/task-10-category-module` |
+
+**Execution Plan:**
+1. After Batch 3 (Task 8) merges, dispatch **2 subagents in parallel** for Tasks 9 & 10
+2. Each subagent opens PR independently
+3. Batch review & merge both PRs
+
+**Checkpoint:** Both tasks merged before proceeding to Batch 5.
+
+---
+
+#### **BATCH 5: Backend Transactions, Dashboard, AI Proxy + AI Parsing Chain** — PARALLEL
+**Execution:** Dispatch 4 subagents in parallel (independent tasks with no inter-dependencies)
+
+| Task | Description | Dependencies | Duration | Branch |
+|------|-------------|--------------|----------|--------|
+| 11 | Transaction module (TDD) | Task 8 ✓ | ~80 min | `feat/task-11-transaction-module` |
+| 12 | Dashboard module (TDD) | Tasks 8,9+ ✓ | ~60 min | `feat/task-12-dashboard-module` |
+| 13 | AI proxy module | Task 8 ✓ | ~40 min | `feat/task-13-ai-proxy-module` |
+| 14 | AI parsing chain (TDD) | Task 3 ✓ | ~60 min | `feat/task-14-ai-parsing-chain` |
+
+**Execution Plan:**
+1. Can start after Task 8 merges (does **not** wait for Batch 4 to complete)
+2. Dispatch **4 subagents in parallel** for Tasks 11, 12, 13, 14
+3. Task 14 (Python) is independent and runs fully in parallel with backend work
+4. Each subagent opens PR independently
+5. Batch review & merge all 4 PRs
+
+**Note:** Batches 4 & 5 can overlap. Batch 4 PRs may still be under review while Batch 5 execution begins.
+
+**Checkpoint:** All tasks merged before proceeding to Batch 6.
+
+---
+
+#### **BATCH 6: Frontend Foundation** — SEQUENTIAL
+**Execution:** Tasks must run sequentially (Task 16 depends on Task 15)
+
+| Task | Description | Dependencies | Duration | Branch |
+|------|-------------|--------------|----------|--------|
+| 15 | API client + shared types + hooks | Task 4 ✓ | ~20 min | `feat/task-15-frontend-api-client` |
+| 16 | Auth module + routing | Task 15 ✓ | ~25 min | `feat/task-16-frontend-auth-routing` |
+
+**Execution Plan:**
+1. After Task 4 merges (from Batch 2), Task 15 → PR → code review → merge
+2. Task 16 → PR → code review → merge
+
+**Checkpoint:** Both tasks merged before proceeding to Batch 7.
+
+---
+
+#### **BATCH 7: Frontend Wallet, Category, Transaction** — PARALLEL
+**Execution:** Dispatch 3 subagents in parallel (all depend on Task 16 being merged)
+
+| Task | Description | Dependencies | Duration | Branch |
+|------|-------------|--------------|----------|--------|
+| 17 | Wallet module (Frontend) | Task 16 ✓ | ~50 min | `feat/task-17-frontend-wallet-module` |
+| 18 | Category module (Frontend) | Task 16 ✓ | ~50 min | `feat/task-18-frontend-category-module` |
+| 19 | Transaction module (Frontend) | Task 16 ✓ | ~70 min | `feat/task-19-frontend-transaction-module` |
+
+**Execution Plan:**
+1. After Batch 6 (Task 16) merges, dispatch **3 subagents in parallel** for Tasks 17, 18, 19
+2. Each subagent opens PR independently
+3. Batch review & merge all 3 PRs
+
+**Checkpoint:** All tasks merged before proceeding to Batch 8.
+
+---
+
+#### **BATCH 8: Frontend Dashboard & AI Chat** — PARALLEL
+**Execution:** Dispatch 2 subagents in parallel (depend on Batch 7 being merged)
+
+| Task | Description | Dependencies | Duration | Branch |
+|------|-------------|--------------|----------|--------|
+| 20 | Dashboard module (Frontend) | Tasks 16,17+ ✓ | ~60 min | `feat/task-20-frontend-dashboard-module` |
+| 21 | AI chat module (Frontend) | Tasks 16,13+ ✓ | ~60 min | `feat/task-21-frontend-ai-chat-module` |
+
+**Execution Plan:**
+1. After Batch 7 (Tasks 17-19) merge, dispatch **2 subagents in parallel** for Tasks 20 & 21
+2. Each subagent opens PR independently
+3. Batch review & merge both PRs
+
+**Checkpoint:** Both tasks merged before proceeding to Batch 9.
+
+---
+
+#### **BATCH 9: Integration Testing & Deployment** — SEQUENTIAL
+**Execution:** Tasks must run sequentially (Task 23 depends on Task 22 passing)
+
+| Task | Description | Dependencies | Duration | Branch |
+|------|-------------|--------------|----------|--------|
+| 22 | Local integration test | All tasks ✓ | ~30 min | `feat/task-22-local-integration-test` |
+| 23 | VPS deployment | Task 22 ✓ | ~20 min | `feat/task-23-vps-deployment` |
+
+**Execution Plan:**
+1. After Batch 8 (Tasks 20-21) merge, Task 22 → PR → code review → merge
+2. Task 23 → PR → code review → merge
+
+**Checkpoint:** Final code review before marking MVP complete.
+
+---
+
+### Execution Timeline
+
+```
+Batch 1 (SERIAL) — ~10 min
+│
+└─ Task 1 ✓
+   │
+   └─ Batch 2 (PARALLEL 2-4 + SERIAL 5) — ~55 min
+      ├─ Tasks 2,3,4 (parallel) ✓
+      └─ Task 5 ✓
+         │
+         ├─ Batch 3 (SERIAL) — ~50 min                 (Backend Foundation)
+         │  └─ Tasks 6→7→8 ✓
+         │     │
+         │     ├─ Batch 4 (PARALLEL) — ~60 min         (Wallet + Category)
+         │     │  └─ Tasks 9,10 ✓
+         │     │
+         │     └─ Batch 5 (PARALLEL) — ~80 min         (Transactions + Dashboard + AI)
+         │        └─ Tasks 11,12,13,14 ✓
+         │
+         └─ Batch 6 (SERIAL) — ~45 min                 (Frontend Foundation)
+            └─ Tasks 15→16 ✓
+               │
+               └─ Batch 7 (PARALLEL) — ~70 min         (Frontend Modules)
+                  └─ Tasks 17,18,19 ✓
+                     │
+                     └─ Batch 8 (PARALLEL) — ~60 min   (Dashboard + AI Chat)
+                        └─ Tasks 20,21 ✓
+                           │
+                           └─ Batch 9 (SERIAL) — ~50 min (Integration + Deploy)
+                              └─ Tasks 22→23 ✓
+```
+
+**Critical Path (Wall-Clock Time):** ~7-8 hours (with parallel execution optimizations)
+
+---
+
+### Code Review Strategy
+
+**Per-Batch Reviews:**
+- ✅ **Batch 1:** Quick approval → merge (monorepo setup is straightforward)
+- ✅ **Batches 2-5:** Infrastructure, database schema, auth guard, business logic
+  - Focus: NestJS patterns, Prisma migrations, Supabase integration, test coverage
+  - Check: All tests passing before merge
+- ✅ **Batches 6-8:** Frontend routing, API integration, component design
+  - Focus: TanStack Router setup, API interceptors, component architecture, accessibility
+  - Check: No console errors, routing guards working
+- ✅ **Batch 9:** Full integration testing + final approval
+  - Focus: End-to-end flow, Docker Compose health, deployment readiness
+
+**Merging Process:**
+- Each batch's PRs can be opened in parallel (while previous batch is under review)
+- Merge each batch only after **all PRs in that batch pass code review + tests**
+- No direct master pushes; all changes via PR
+
+---
+
+### Running the Execution
+
+**Use this command to start implementing:**
+
+```bash
+# Invoke superpowers:subagent-driven-development with this plan
+# The skill will manage batch-by-batch execution with checkpoints
+```
+
+Each batch will display a checkpoint where you can:
+- ✅ Approve and proceed to the next batch
+- 🔄 Request revisions on any task PR
+- ❌ Stop and debug if integration tests fail
+
+---
+
 ## Chunk 1: Infrastructure & Monorepo Setup
 
 ### Task 1: Initialize Monorepo Root
