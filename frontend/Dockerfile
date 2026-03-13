@@ -9,4 +9,4 @@ RUN pnpm build
 FROM node:20-alpine
 WORKDIR /app
 COPY --from=builder /app/dist /app/dist
-CMD ["sleep", "infinity"]
+CMD ["tail", "-f", "/dev/null"]
