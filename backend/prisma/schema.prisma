@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String     @id
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  deleted_at DateTime?
+  wallets    Wallet[]
+  categories Category[]
+  @@map("users")
+}
+
+model Wallet {
+  id         String     @id @default(uuid())
+  user_id    String
+  name       String
+  balance    Decimal    @db.Decimal(15, 2)
+  type       WalletType
+  created_at DateTime   @default(now())
+  updated_at DateTime   @updatedAt
+  deleted_at DateTime?
+  user       User       @relation(fields: [user_id], references: [id])
+  postings   Posting[]
+  @@map("wallet")
+}
+
+model Category {
+  id           String       @id @default(uuid())
+  user_id      String
+  name         String
+  description  String?
+  type         CategoryType
+  created_at   DateTime     @default(now())
+  updated_at   DateTime     @updatedAt
+  deleted_at   DateTime?
+  user         User         @relation(fields: [user_id], references: [id])
+  transactions TransactionEvent[]
+  @@map("category")
+}
+
+model TransactionEvent {
+  id          String          @id @default(uuid())
+  type        TransactionType
+  note        String?
+  category_id String?
+  occurred_at DateTime
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @updatedAt
+  deleted_at  DateTime?
+  category    Category?       @relation(fields: [category_id], references: [id])
+  postings    Posting[]
+  @@map("transaction_event")
+}
+
+model Posting {
+  id         String           @id @default(uuid())
+  event_id   String
+  wallet_id  String
+  amount     Decimal          @db.Decimal(15, 2)
+  created_at DateTime         @default(now())
+  updated_at DateTime         @updatedAt
+  deleted_at DateTime?
+  event      TransactionEvent @relation(fields: [event_id], references: [id])
+  wallet     Wallet           @relation(fields: [wallet_id], references: [id])
+  @@map("posting")
+}
+
+enum WalletType {
+  cash
+  bank
+  e_wallet
+  other
+}
+
+enum CategoryType {
+  expense
+  income
+}
+
+enum TransactionType {
+  expense
+  income
+  transfer
+}
