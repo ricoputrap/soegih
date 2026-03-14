@@ -1,0 +1,21 @@
+{
+  "name": "soegih-e2e",
+  "version": "1.0.0",
+  "description": "Playwright E2E tests for Soegih",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:fast": "playwright test --grep-invert @slow",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.45.0",
+    "@supabase/supabase-js": "^2.41.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0"
+  }
+}

@@ -1,0 +1,19 @@
+:80 {
+    handle /api/* {
+        reverse_proxy backend:3000
+    }
+    handle {
+        root /srv/www
+        file_server
+    }
+}
+
+:443 {
+    handle /api/* {
+        reverse_proxy backend:3000
+    }
+    handle {
+        root /srv/www
+        file_server
+    }
+}

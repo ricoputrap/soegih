@@ -1,0 +1,12 @@
+{
+  "name": "soegih",
+  "version": "1.0.0",
+  "description": "Personal finance management app",
+  "private": true,
+  "scripts": {
+    "e2e": "cd e2e && pnpm dlx playwright test",
+    "e2e:fast": "cd e2e && pnpm dlx playwright test --grep-invert @slow",
+    "e2e:ui": "cd e2e && pnpm dlx playwright test --ui",
+    "e2e:report": "cd e2e && pnpm dlx playwright show-report"
+  }
+}
