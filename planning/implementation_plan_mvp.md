@@ -297,12 +297,15 @@ Each batch will display a checkpoint where you can:
 
 ### Task 1: Initialize Monorepo Root
 
+**Status:** ✅ COMPLETED
+**PR:** [#1: Task 1: Initialize Monorepo Root](https://github.com/ricoputrapradana/soegih/pull/1)
+
 **Files:**
 
 - Create: `.gitignore`
 - Create: `.env.example`
 
-- [ ] **Step 1: Create .gitignore**
+- [x] **Step 1: Create .gitignore**
 
 ```gitignore
 node_modules/
@@ -319,9 +322,10 @@ build/
 .DS_Store
 *.log
 logs/
+.worktrees/
 ```
 
-- [ ] **Step 2: Create .env.example**
+- [x] **Step 2: Create .env.example**
 
 ```env
 DATABASE_URL=postgresql://user:password@host:5432/soegih
@@ -336,7 +340,7 @@ VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add .gitignore .env.example
@@ -347,17 +351,20 @@ git commit -m "chore: initialize monorepo root with Supabase Auth config"
 
 ### Task 2: Scaffold NestJS Backend
 
+**Status:** ✅ COMPLETED
+**PR:** [#2: Batch 2 (Parallel): Service Scaffolding](https://github.com/ricoputrapradana/soegih/pull/2)
+
 **Files:**
 
 - Create: `backend/` (NestJS project)
 
-- [ ] **Step 1: Scaffold NestJS**
+- [x] **Step 1: Scaffold NestJS**
 
 ```bash
 npx @nestjs/cli new backend --package-manager pnpm --skip-git
 ```
 
-- [ ] **Step 2: Install dependencies**
+- [x] **Step 2: Install dependencies**
 
 ```bash
 cd backend
@@ -367,11 +374,11 @@ pnpm add nestjs-pino pino-http pino-pretty
 pnpm add class-validator class-transformer axios
 ```
 
-- [ ] **Step 3: Remove NestJS boilerplate**
+- [x] **Step 3: Remove NestJS boilerplate**
 
 Delete `src/app.controller.ts`, `src/app.controller.spec.ts`, `src/app.service.ts`. Update `src/app.module.ts` to remove references to them.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add backend/
@@ -382,6 +389,9 @@ git commit -m "chore: scaffold NestJS backend"
 
 ### Task 3: Scaffold Python AI Service
 
+**Status:** ✅ COMPLETED
+**PR:** [#2: Batch 2 (Parallel): Service Scaffolding](https://github.com/ricoputrapradana/soegih/pull/2)
+
 **Files:**
 
 - Create: `ai/requirements.txt`
@@ -390,7 +400,7 @@ git commit -m "chore: scaffold NestJS backend"
 - Create: `ai/app/config.py`
 - Create: `ai/tests/__init__.py`
 
-- [ ] **Step 1: Create requirements.txt**
+- [x] **Step 1: Create requirements.txt**
 
 ```txt
 fastapi==0.115.0
@@ -405,7 +415,7 @@ pytest==8.3.0
 pytest-asyncio==0.24.0
 ```
 
-- [ ] **Step 2: Create app/config.py**
+- [x] **Step 2: Create app/config.py**
 
 ```python
 from pydantic_settings import BaseSettings
@@ -420,7 +430,7 @@ class Settings(BaseSettings):
 settings = Settings()
 ```
 
-- [ ] **Step 3: Create app/main.py**
+- [x] **Step 3: Create app/main.py**
 
 ```python
 from fastapi import FastAPI
@@ -434,7 +444,7 @@ def health():
     return {"status": "ok"}
 ```
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add ai/
@@ -445,11 +455,14 @@ git commit -m "chore: scaffold Python AI service"
 
 ### Task 4: Scaffold React Frontend
 
+**Status:** ✅ COMPLETED
+**PR:** [#2: Batch 2 (Parallel): Service Scaffolding](https://github.com/ricoputrapradana/soegih/pull/2)
+
 **Files:**
 
 - Create: `frontend/` (Vite + React + TanStack Router project)
 
-- [ ] **Step 1: Scaffold project with create-tsrouter-app**
+- [x] **Step 1: Scaffold project with create-tsrouter-app**
 
 ```bash
 pnpx create-tsrouter-app@latest frontend
@@ -459,18 +472,18 @@ cd frontend && pnpm install
 
 `create-tsrouter-app` sets up `@tanstack/react-router`, `@tanstack/router-vite-plugin`, and the `routeTree.gen.ts` auto-generation pipeline.
 
-- [ ] **Step 2: Install additional dependencies**
+- [x] **Step 2: Install additional dependencies**
 
 ```bash
 cd frontend
 pnpm add axios recharts @tanstack/react-table @supabase/supabase-js
 ```
 
-- [ ] **Step 3: Remove boilerplate**
+- [x] **Step 3: Remove boilerplate**
 
 Delete any generated demo route files and placeholder components that won't be used. Keep `src/routes/__root.tsx` and `src/main.tsx` — these will be modified in Task 16.
 
-- [ ] **Step 4: Create module-based structure**
+- [x] **Step 4: Create module-based structure**
 
 ```bash
 cd frontend
@@ -479,7 +492,7 @@ mkdir -p src/shared/{components,hooks,utils,types}
 mkdir -p src/assets
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add frontend/
@@ -490,6 +503,9 @@ git commit -m "chore: scaffold React frontend with TanStack Router"
 
 ### Task 5: Docker Compose + Caddy
 
+**Status:** ✅ COMPLETED
+**PR:** [#3: Batch 2 (Sequential): Infrastructure Setup](https://github.com/ricoputrapradana/soegih/pull/3)
+
 **Files:**
 
 - Create: `docker-compose.yml`
@@ -497,8 +513,9 @@ git commit -m "chore: scaffold React frontend with TanStack Router"
 - Create: `backend/Dockerfile`
 - Create: `ai/Dockerfile`
 - Create: `frontend/Dockerfile`
+- Create: `backend/.dockerignore`, `ai/.dockerignore`, `frontend/.dockerignore`
 
-- [ ] **Step 1: Create backend/Dockerfile**
+- [x] **Step 1: Create backend/Dockerfile**
 
 ```dockerfile
 FROM node:20-alpine AS builder
@@ -519,19 +536,21 @@ EXPOSE 3000
 CMD ["node", "dist/main"]
 ```
 
-- [ ] **Step 2: Create ai/Dockerfile**
+- [x] **Step 2: Create ai/Dockerfile**
 
 ```dockerfile
 FROM python:3.12-slim
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
 COPY . .
 EXPOSE 8000
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
-- [ ] **Step 3: Create frontend/Dockerfile**
+- [x] **Step 3: Create frontend/Dockerfile**
 
 ```dockerfile
 FROM node:20-alpine AS builder
@@ -547,10 +566,10 @@ WORKDIR /app
 # Copy dist to /app/dist where it can be mounted to Caddy
 COPY --from=builder /app/dist /app/dist
 # Keep container running (Caddy serves the files via volume mount)
-CMD ["sleep", "infinity"]
+CMD ["tail", "-f", "/dev/null"]
 ```
 
-- [ ] **Step 4: Create docker-compose.yml**
+- [x] **Step 4: Create docker-compose.yml**
 
 ```yaml
 version: "3.9"
@@ -565,6 +584,7 @@ services:
       - caddy_data:/data
       - caddy_config:/config
       - frontend_dist:/srv/www:ro
+    restart: unless-stopped
     depends_on:
       - backend
       - frontend
@@ -593,7 +613,7 @@ volumes:
   frontend_dist:
 ```
 
-- [ ] **Step 5: Create Caddyfile**
+- [x] **Step 5: Create Caddyfile**
 
 ```
 :80 {
@@ -605,20 +625,40 @@ volumes:
         file_server
     }
 }
+
+:443 {
+    handle /api/* {
+        reverse_proxy backend:3000
+    }
+    handle {
+        root /srv/www
+        file_server
+    }
+}
 ```
 
-(For production with a real domain, replace `:80` with `yourdomain.com` — Caddy handles HTTPS automatically.)
+(For production with a real domain, replace `:80/:443` with `yourdomain.com` — Caddy handles HTTPS automatically.)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
-git add docker-compose.yml Caddyfile backend/Dockerfile ai/Dockerfile frontend/Dockerfile
+git add docker-compose.yml Caddyfile backend/Dockerfile ai/Dockerfile frontend/Dockerfile backend/.dockerignore ai/.dockerignore frontend/.dockerignore
 git commit -m "chore: add Docker Compose and Caddy config"
 ```
+
+**Notes:**
+- Added .dockerignore files for all services to optimize build context
+- Fixed ai/Dockerfile to run FastAPI as non-root user (appuser, uid 1000) for security
+- Updated frontend/Dockerfile to use `tail -f /dev/null` instead of `sleep infinity` for proper volume mounting
+- Added HTTPS support (:443 block in Caddyfile)
+- Added restart policies to caddy, frontend, backend, ai services
 
 ---
 
 ### Task 24: E2E Infrastructure Setup (Playwright)
+
+**Status:** ✅ COMPLETED
+**PR:** [#3: Batch 2 (Sequential): Infrastructure Setup](https://github.com/ricoputrapradana/soegih/pull/3)
 
 **Files:**
 
@@ -649,7 +689,7 @@ Set up Playwright E2E testing infrastructure with authentication (via Supabase l
 - Chromium + Firefox (smoke tests); CI: 2 workers, retries 1x on failure
 - AI tests tagged `@slow` with 60s timeout; exclude with `--grep-invert @slow`
 
-- [ ] **Step 1: Create e2e/package.json**
+- [x] **Step 1: Create e2e/package.json**
 
 ```json
 {
@@ -675,7 +715,7 @@ Set up Playwright E2E testing infrastructure with authentication (via Supabase l
 }
 ```
 
-- [ ] **Step 2: Create e2e/tsconfig.json**
+- [x] **Step 2: Create e2e/tsconfig.json**
 
 ```json
 {
@@ -696,7 +736,7 @@ Set up Playwright E2E testing infrastructure with authentication (via Supabase l
 }
 ```
 
-- [ ] **Step 3: Create e2e/.env.e2e.example**
+- [x] **Step 3: Create e2e/.env.e2e.example**
 
 ```env
 # E2E Test Configuration
@@ -707,7 +747,7 @@ SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_ANON_KEY=eyJ...
 ```
 
-- [ ] **Step 4: Create e2e/playwright.config.ts**
+- [x] **Step 4: Create e2e/playwright.config.ts**
 
 ```typescript
 import { defineConfig, devices } from '@playwright/test';
@@ -742,7 +782,7 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 5: Create e2e/global-setup.ts**
+- [x] **Step 5: Create e2e/global-setup.ts**
 
 ```typescript
 import { chromium, FullConfig } from '@playwright/test';
@@ -808,7 +848,7 @@ async function globalSetup(config: FullConfig) {
 export default globalSetup;
 ```
 
-- [ ] **Step 6: Create e2e/global-teardown.ts**
+- [x] **Step 6: Create e2e/global-teardown.ts**
 
 ```typescript
 import { FullConfig } from '@playwright/test';
@@ -836,7 +876,7 @@ async function globalTeardown(config: FullConfig) {
 export default globalTeardown;
 ```
 
-- [ ] **Step 7: Create e2e/fixtures/app.fixture.ts**
+- [x] **Step 7: Create e2e/fixtures/app.fixture.ts**
 
 ```typescript
 import { test as base, Page } from '@playwright/test';
@@ -863,7 +903,7 @@ export const test = base.extend<{
 export { expect } from '@playwright/test';
 ```
 
-- [ ] **Step 8: Create e2e/helpers/supabase-helper.ts**
+- [x] **Step 8: Create e2e/helpers/supabase-helper.ts**
 
 ```typescript
 import { Page } from '@playwright/test';
@@ -884,7 +924,7 @@ export class SupabaseHelper {
 }
 ```
 
-- [ ] **Step 9: Create e2e/helpers/api-helper.ts**
+- [x] **Step 9: Create e2e/helpers/api-helper.ts**
 
 ```typescript
 import { APIRequestContext, request } from '@playwright/test';
@@ -933,7 +973,7 @@ export class ApiHelper {
 }
 ```
 
-- [ ] **Step 10: Create Page Object Model stubs (e2e/pages/*.ts)**
+- [x] **Step 10: Create Page Object Model stubs (e2e/pages/*.ts)**
 
 Create placeholder files for each page (fully implemented in Tasks 25-28):
 - `LoginPage.ts`
@@ -953,13 +993,13 @@ export class XyzPage {
 }
 ```
 
-- [ ] **Step 11: Create tests directory**
+- [x] **Step 11: Create tests directory**
 
 ```bash
 mkdir -p e2e/tests
 ```
 
-- [ ] **Step 12: Update .gitignore**
+- [x] **Step 12: Update .gitignore**
 
 Add:
 ```
@@ -970,7 +1010,7 @@ e2e/.env.e2e
 e2e/test-results/
 ```
 
-- [ ] **Step 13: Update root package.json scripts**
+- [x] **Step 13: Update root package.json scripts**
 
 Add:
 ```json
@@ -984,11 +1024,11 @@ Add:
 }
 ```
 
-- [ ] **Step 14: Update docs/ARCHITECTURE.md**
+- [x] **Step 14: Update docs/ARCHITECTURE.md**
 
 Add a new "Testing" section describing E2E layer and cross-cutting `data-testid` requirements.
 
-- [ ] **Step 15: Update docs/DEPLOYMENT.md**
+- [x] **Step 15: Update docs/DEPLOYMENT.md**
 
 Add E2E setup section with:
 - `pnpm install` inside `e2e/` directory
@@ -996,7 +1036,7 @@ Add E2E setup section with:
 - `pnpm e2e` to run full suite
 - `pnpm e2e:fast` for non-AI tests
 
-- [ ] **Step 16: Commit**
+- [x] **Step 16: Commit**
 
 ```bash
 git add -A e2e/ .gitignore docs/ package.json
@@ -1009,17 +1049,22 @@ git commit -m "feat(e2e): add Playwright infrastructure with Supabase auth and f
 
 ### Task 6: Prisma Schema & Migrations
 
+**Status:** ✅ COMPLETED
+**PR:** [#4: Task 6: Prisma Schema & Migrations (Batch 3)](https://github.com/ricoputrapradana/soegih/pull/4)
+
 **Files:**
 
 - Create: `backend/prisma/schema.prisma`
+- Create: `backend/prisma/migrations/0_init/migration.sql`
+- Create: `backend/prisma/migrations/1_add_partial_unique_indexes/migration.sql`
 
-- [ ] **Step 1: Initialize Prisma**
+- [x] **Step 1: Initialize Prisma**
 
 ```bash
 cd backend && npx prisma init --datasource-provider postgresql
 ```
 
-- [ ] **Step 2: Write schema.prisma**
+- [x] **Step 2: Write schema.prisma**
 
 ```prisma
 generator client {
@@ -1101,13 +1146,13 @@ enum CategoryType { expense income }
 enum TransactionType { expense income transfer }
 ```
 
-- [ ] **Step 3: Create initial migration**
+- [x] **Step 3: Create initial migration**
 
 ```bash
 cd backend && npx prisma migrate dev --name init
 ```
 
-- [ ] **Step 4: Add partial unique indexes via raw migration**
+- [x] **Step 4: Add partial unique indexes via raw migration**
 
 ```bash
 npx prisma migrate dev --name add_partial_unique_indexes --create-only
@@ -1131,7 +1176,7 @@ Then run:
 npx prisma migrate deploy
 ```
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add backend/prisma/
