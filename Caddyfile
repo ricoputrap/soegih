@@ -3,7 +3,8 @@
         reverse_proxy backend:3000
     }
     handle {
-        root /srv/www
+        root * /srv/www
+        try_files {path} /index.html
         file_server
     }
 }
@@ -13,7 +14,8 @@
         reverse_proxy backend:3000
     }
     handle {
-        root /srv/www
+        root * /srv/www
+        try_files {path} /index.html
         file_server
     }
 }
