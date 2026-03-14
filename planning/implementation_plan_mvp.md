@@ -8,6 +8,20 @@
 
 **Tech Stack:** NestJS + TypeScript + Prisma, Python FastAPI + LangChain + gpt-4o-mini, React + Vite, Postgres (Supabase), Supabase Auth, Pino logging, Caddy reverse proxy, Docker Compose.
 
+**Frontend Design Approach:**
+
+All user-facing frontend modules (Tasks 16-21, 25-28) will use the Claude Code `/frontend-design` skill to create distinctive, production-grade UI components. This ensures:
+- Professional, polished user interfaces
+- Consistent design patterns across features
+- Accessible, responsive components
+- High-quality user experience from the start
+
+When implementing frontend tasks, invoke the `/frontend-design` skill to design and build:
+- **Task 16:** Auth module UI (login, logout, protected routes)
+- **Task 17-19:** Data entry and display modules (wallet, category, transaction UIs)
+- **Task 20-21:** Dashboard (charts, stats) and AI chat interface
+- **Tasks 25-28:** E2E tests will verify visual and interactive correctness
+
 ---
 
 ## Execution Strategy
@@ -142,8 +156,10 @@ This plan uses a **mixed-approach execution model**: sequential dependencies are
 **Execution Plan:**
 
 1. After Task 4 merges (from Batch 2), Task 15 → PR → code review → merge
-2. Task 16 → PR → code review → merge
+2. Task 16 → **use `/frontend-design` skill** → PR → code review → merge
 3. Task 25 → PR → code review → merge
+
+**Frontend Design Note:** Task 16 (Auth module) uses `/frontend-design` skill to create professional login/logout UI and protected route layouts.
 
 **Checkpoint:** All tasks merged before proceeding to Batch 7.
 
@@ -163,12 +179,14 @@ This plan uses a **mixed-approach execution model**: sequential dependencies are
 
 **Execution Plan:**
 
-1. After Batch 6 (Task 16) merges, dispatch **3 subagents in parallel** for Tasks 17, 18, 19
+1. After Batch 6 (Task 16) merges, dispatch **3 subagents in parallel** for Tasks 17, 18, 19 (each uses `/frontend-design` skill)
 2. Each subagent opens PR independently
 3. Batch review & merge all 3 PRs
 4. Dispatch **2 subagents in parallel** for Tasks 26 & 27
 5. Each subagent opens PR independently
 6. Batch review & merge both PRs
+
+**Frontend Design Note:** Tasks 17-19 (Wallet, Category, Transaction modules) use `/frontend-design` skill to create professional data entry forms, tables, and UI components.
 
 **Checkpoint:** All tasks merged before proceeding to Batch 8.
 
@@ -176,13 +194,15 @@ This plan uses a **mixed-approach execution model**: sequential dependencies are
 
 #### **BATCH 8: Frontend Dashboard & AI Chat + Dashboard & AI Chat E2E Tests** — PARALLEL + SEQUENTIAL
 
-**Execution:** Dispatch 2 subagents in parallel for Tasks 20-21, then Task 28 after they merge.
+**Execution:** Dispatch 2 subagents in parallel for Tasks 20-21 (using `/frontend-design` skill), then Task 28 after they merge.
 
 | Task | Description                         | Dependencies   | Duration | Branch                                   |
 | ---- | ----------------------------------- | -------------- | -------- | ---------------------------------------- |
 | 20   | Dashboard module (Frontend)         | Tasks 16,17+ ✓ | ~60 min  | `feat/task-20-frontend-dashboard-module` |
 | 21   | AI chat module (Frontend)           | Tasks 16,13+ ✓ | ~60 min  | `feat/task-21-frontend-ai-chat-module`   |
 | 28   | Dashboard + AI Chat E2E Tests       | Tasks 20,21 ✓  | ~35 min  | `feat/task-28-dashboard-ai-e2e`          |
+
+**Frontend Design Note:** Tasks 20-21 (Dashboard with charts/stats and AI chat interface) use `/frontend-design` skill to create distinctive, polished data visualization and interactive chat UI.
 
 **Execution Plan:**
 

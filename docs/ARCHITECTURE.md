@@ -184,6 +184,15 @@ See [/frontend/src/](../frontend/src/) for the actual structure.
   - User inputs natural language → AI service parses → confirmation card
   - On confirm, creates transaction via normal Transaction API
 
+**Design & UI:**
+
+All frontend modules use the Claude Code `/frontend-design` skill to create distinctive, production-grade UI components:
+- **Professional styling** — Polished, modern interface with consistent design language
+- **Accessibility** — WCAG 2.1 compliant components (color contrast, keyboard navigation, screen readers)
+- **Responsiveness** — Mobile-first design, responsive layouts for all screen sizes
+- **Component library** — Reusable, composable components across all modules
+- **Interactive patterns** — Smooth animations, proper loading states, error handling
+
 **Routes:**
 
 - `/login` — Login page (public)

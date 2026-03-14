@@ -80,6 +80,22 @@ Follow these exactly (from project_spec.md section 8):
 - NestJS modules in `src/modules/`; shared code in `src/common/`
 - Each feature is isolated and self-contained
 
+## Frontend Design Approach
+
+**Use the `/frontend-design` skill for all user-facing frontend modules** to create distinctive, production-grade UI components. This ensures professional, accessible, and responsive interfaces from the start.
+
+**When implementing frontend tasks (Tasks 16-21, 25-28):**
+- Invoke `/frontend-design` skill to design and build UI components
+- **Task 16:** Auth module — login, logout, protected route layouts
+- **Tasks 17-19:** Data modules — wallet, category, transaction forms and tables
+- **Tasks 20-21:** Dashboard and AI chat — charts, stats, and interactive chat UI
+
+The skill handles:
+- Component design and composition
+- Styling and visual polish
+- Accessibility and responsiveness
+- Interaction patterns
+
 ## API & Data Patterns
 
 - Use PATCH for partial updates, DELETE for soft deletion (no hard deletes)
